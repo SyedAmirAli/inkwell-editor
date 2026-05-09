@@ -1,0 +1,296 @@
+/* Tiptap / ProseMirror specific overrides — scoped to .rte-content */
+
+/* Remove default ProseMirror outline */
+.ProseMirror {
+    outline: none;
+    min-height: 120px;
+}
+.ProseMirror:focus {
+    outline: none;
+}
+
+/* Placeholder */
+.ProseMirror p.is-empty::before,
+.ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--fg-placeholder);
+    pointer-events: none;
+    float: left;
+    height: 0;
+}
+
+/* Task list */
+.rte-content ul[data-type="taskList"] {
+    list-style: none;
+    padding-left: 0;
+}
+.rte-content ul[data-type="taskList"] li {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+.rte-content ul[data-type="taskList"] li > label {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.rte-content ul[data-type="taskList"] li > label input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 3px;
+    cursor: pointer;
+    appearance: none;
+    background: transparent;
+    position: relative;
+}
+.rte-content ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+    background: var(--ink-12);
+    border-color: var(--ink-12);
+}
+.rte-content ul[data-type="taskList"] li > label input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+        center/contain no-repeat;
+}
+.rte-content ul[data-type="taskList"] li > div {
+    flex: 1;
+}
+.rte-content ul[data-type="taskList"] li[data-checked="true"] > div {
+    text-decoration: line-through;
+    color: var(--fg-muted);
+}
+
+/* Table */
+.rte-content table {
+    position: relative;
+}
+.rte-content .selectedCell {
+    background: var(--selection);
+}
+.rte-content .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--ink-12);
+    pointer-events: none;
+    opacity: 0.5;
+}
+.tableWrapper {
+    overflow-x: auto;
+}
+
+/* Link */
+.rte-content a[href] {
+    cursor: pointer;
+}
+
+/* Code block line numbers (future) */
+.rte-content pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+}
+
+/* Highlight colors */
+.rte-content mark[data-color="yellow"] {
+    background: var(--highlight-yellow);
+}
+.rte-content mark[data-color="pink"] {
+    background: var(--highlight-pink);
+}
+.rte-content mark[data-color="mint"] {
+    background: var(--highlight-mint);
+}
+
+/* BubbleMenu animation */
+.tippy-box {
+    animation: rte-pop 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes rte-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Source view textarea */
+.rte-source-view {
+    width: 100%;
+    min-height: 400px;
+    padding: 24px;
+    font: 13px/1.6 var(--font-mono);
+    color: var(--fg);
+    background: var(--canvas);
+    border: none;
+    outline: none;
+    resize: vertical;
+}
+
+/* Link dialog overlay */
+.rte-link-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-scrim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    backdrop-filter: blur(4px);
+}
+.rte-link-dialog {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-4);
+    box-shadow: var(--shadow-2);
+    padding: 20px;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+}
+.rte-link-dialog h3 {
+    font: 600 14px/1 var(--font-ui);
+    color: var(--fg);
+    margin: 0 0 12px;
+}
+.rte-link-dialog input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-2);
+    background: var(--canvas);
+    color: var(--fg);
+    font: 13px/1 var(--font-ui);
+    outline: none;
+    margin-bottom: 12px;
+}
+.rte-link-dialog input:focus {
+    border-color: var(--ring);
+}
+.rte-link-dialog-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.rte-link-label {
+    display: block;
+    font: 600 11px/1 var(--font-ui);
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+}
+
+/* Color picker row */
+.rte-color-row {
+    display: flex;
+    gap: 3px;
+    padding: 4px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-1);
+}
+.rte-color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--r-1);
+    border: 1.5px solid var(--border-strong);
+    cursor: pointer;
+    transition: transform 80ms ease-out;
+}
+.rte-color-swatch:hover {
+    transform: scale(1.15);
+}
+
+/* ── Minimal theme-aware scrollbars ────────────────────────────────── */
+
+/* Shared shorthand — both Firefox and the WebKit size rule target the same set */
+.rte-body,
+.rte-canvas,
+.rte-ai-body,
+.rte-canvas-inner,
+.rte-source-view,
+.tableWrapper,
+.rte-compact-input .ProseMirror {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-5) transparent;
+}
+
+/* WebKit — explicitly list the same containers, no wildcard */
+.rte-body::-webkit-scrollbar,
+.rte-canvas::-webkit-scrollbar,
+.rte-ai-body::-webkit-scrollbar,
+.rte-canvas-inner::-webkit-scrollbar,
+.rte-source-view::-webkit-scrollbar,
+.tableWrapper::-webkit-scrollbar,
+.rte-compact-input .ProseMirror::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.rte-body::-webkit-scrollbar-track,
+.rte-canvas::-webkit-scrollbar-track,
+.rte-ai-body::-webkit-scrollbar-track,
+.rte-canvas-inner::-webkit-scrollbar-track,
+.rte-source-view::-webkit-scrollbar-track,
+.tableWrapper::-webkit-scrollbar-track,
+.rte-compact-input .ProseMirror::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.rte-body::-webkit-scrollbar-thumb,
+.rte-canvas::-webkit-scrollbar-thumb,
+.rte-ai-body::-webkit-scrollbar-thumb,
+.rte-canvas-inner::-webkit-scrollbar-thumb,
+.rte-source-view::-webkit-scrollbar-thumb,
+.tableWrapper::-webkit-scrollbar-thumb,
+.rte-compact-input .ProseMirror::-webkit-scrollbar-thumb {
+    background: var(--ink-4);
+    border-radius: 99px;
+}
+
+.rte-body::-webkit-scrollbar-thumb:hover,
+.rte-canvas::-webkit-scrollbar-thumb:hover,
+.rte-ai-body::-webkit-scrollbar-thumb:hover,
+.rte-canvas-inner::-webkit-scrollbar-thumb:hover,
+.rte-source-view::-webkit-scrollbar-thumb:hover,
+.tableWrapper::-webkit-scrollbar-thumb:hover,
+.rte-compact-input .ProseMirror::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-6);
+}
+
+.rte-body::-webkit-scrollbar-corner,
+.rte-canvas::-webkit-scrollbar-corner,
+.rte-ai-body::-webkit-scrollbar-corner,
+.rte-canvas-inner::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Compact mode — Tiptap uses same rte-content class */
+.rte-compact-input .ProseMirror {
+    min-height: var(--h-compact-min);
+    max-height: var(--h-compact-max);
+    overflow-y: auto;
+    padding: 12px 14px;
+    font: 400 16px/1.6 var(--font-display);
+    color: var(--fg);
+}
+
+.rte-canvas[data-mode="document"] .rte-canvas-inner {
+    overflow-y: auto;
+}
+
+.rte-canvas[data-mode="fullscreen"] .rte-canvas-inner {
+    overflow-y: visible;
+}
+
+.rte-canvas[data-mode="fullscreen"] {
+    overflow-y: auto;
+}
