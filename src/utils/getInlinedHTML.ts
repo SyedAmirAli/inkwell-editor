@@ -1,149 +1,167 @@
 /**
  * getInlinedHTML
  *
- * Converts Tiptap editor HTML into fully self-contained HTML with every style
- * baked in as inline attributes. The result requires no CSS import and does not
- * conflict with Tailwind, CSS resets, or any host stylesheet.
+ * এডিটরের HTML আউটপুট নেয় এবং প্রতিটা ট্যাগে style attribute যোগ করে।
+ * HTML স্ট্রাকচার একদম একই থাকে - শুধু inline styles যোগ হয়।
  *
- * Usage:
+ * ব্যবহার:
  *   import { getInlinedHTML } from "@/utils/getInlinedHTML";
- *   const html = getInlinedHTML(editor.getHTML());
- *   // or with an editor ref:
- *   const html = getInlinedHTML(editorRef.current?.getHTML() ?? "");
+ *   const inlinedHTML = getInlinedHTML(editor.getHTML());
+ *   // এখন এই HTML রেন্ডার করতে কোনো CSS import লাগবে না!
  */
 
-// Base styles per HTML tag — these mirror what the editor's CSS renders
+// প্রতিটা HTML ট্যাগের জন্য স্টাইল - index.css এর .rte-content থেকে নেওয়া
 const TAG_STYLES: Record<string, string> = {
-  h1: "font-size:2em;font-weight:700;line-height:1.2;margin-top:0.83em;margin-bottom:0.4em",
-  h2: "font-size:1.5em;font-weight:700;line-height:1.3;margin-top:0.75em;margin-bottom:0.4em",
-  h3: "font-size:1.25em;font-weight:600;line-height:1.4;margin-top:0.75em;margin-bottom:0.4em",
-  h4: "font-size:1.1em;font-weight:600;line-height:1.4;margin-top:0.75em;margin-bottom:0.4em",
-  h5: "font-size:1em;font-weight:600;line-height:1.4;margin-top:0.75em;margin-bottom:0.4em",
-  h6: "font-size:0.9em;font-weight:600;line-height:1.4;margin-top:0.75em;margin-bottom:0.4em",
-  p: "margin-top:0.5em;margin-bottom:0.5em;line-height:1.6",
-  strong: "font-weight:700",
-  em: "font-style:italic",
-  u: "text-decoration:underline",
-  s: "text-decoration:line-through",
-  code: "font-family:ui-monospace,SFMono-Regular,monospace;font-size:0.875em;background-color:#f0f0ef;padding:0.15em 0.35em;border-radius:3px",
-  pre: "background-color:#f0f0ef;padding:1em 1.5em;border-radius:6px;overflow-x:auto;margin:1em 0;font-size:0.875em;line-height:1.6",
-  blockquote:
-    "border-left:3px solid #d0d0d0;margin:1em 0;padding:0.5em 1em;color:#666666",
-  ul: "padding-left:1.5em;margin:0.5em 0;list-style-type:disc",
-  ol: "padding-left:1.5em;margin:0.5em 0;list-style-type:decimal",
-  li: "margin:0.25em 0;line-height:1.6",
-  table:
-    "border-collapse:collapse;width:100%;margin:1em 0;table-layout:fixed",
-  thead: "",
-  tbody: "",
-  tr: "",
-  th: "border:1px solid #d0d0d0;padding:0.5em 0.75em;background-color:#f5f5f4;font-weight:600;text-align:left;vertical-align:top",
-  td: "border:1px solid #d0d0d0;padding:0.5em 0.75em;vertical-align:top",
-  a: "color:#2563eb;text-decoration:underline;text-underline-offset:2px",
-  hr: "border:none;border-top:1px solid #e0e0e0;margin:1.5em 0",
+    // Headings - exact sizes from CSS variables
+    h1: "font-size:56px;line-height:1.1;font-weight:700;letter-spacing:-0.02em;margin:0 0 0.4em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    h2: "font-size:32px;line-height:1.25;font-weight:700;letter-spacing:-0.01em;margin:1.4em 0 0.4em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    h3: "font-size:24px;line-height:1.25;font-weight:600;margin:1.4em 0 0.3em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    h4: "font-size:18px;line-height:1.45;font-weight:600;margin:1.2em 0 0.25em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    h5: "font-size:16px;line-height:1.45;font-weight:600;margin:1.2em 0 0.25em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    h6: "font-size:14px;line-height:1.45;font-weight:600;margin:1em 0 0.25em 0;color:#666;font-family:'Newsreader','Iowan Old Style',Georgia,serif",
+
+    // Paragraph and inline
+    p: "margin:0 0 0.8em 0;line-height:1.6;font-family:'Newsreader','Iowan Old Style',Georgia,serif;font-size:16px;color:#1a1a2e",
+    strong: "font-weight:700",
+    em: "font-style:italic",
+    u: "text-decoration:underline",
+    s: "text-decoration:line-through",
+
+    // Code
+    code: "font-family:'JetBrains Mono','Geist Mono','SF Mono',Menlo,monospace;font-size:0.92em;padding:0.1em 0.35em;border-radius:4px;background:#f8fafc;color:inherit",
+    pre: "font-family:'JetBrains Mono','Geist Mono','SF Mono',Menlo,monospace;font-size:0.92em;background:#f8fafc;border:1px solid #e8e8f0;border-radius:8px;padding:16px;overflow-x:auto;margin:1em 0",
+
+    // Blocks
+    blockquote: "margin:1em 0;padding-left:1em;border-left:2px solid #333;color:#666;font-style:italic;font-family:'Newsreader','Iowan Old Style',Georgia,serif",
+    hr: "border:0;height:1px;background:#e8e8f0;margin:2em 0",
+
+    // Lists
+    ul: "padding-left:1.5em;margin:0.5em 0;list-style-type:disc",
+    ol: "padding-left:1.5em;margin:0.5em 0;list-style-type:decimal",
+    li: "margin:0.25em 0;line-height:1.6;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+
+    // Tables
+    table: "border-collapse:collapse;width:100%;margin:1em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif",
+    thead: "",
+    tbody: "",
+    tr: "",
+    th: "border:1px solid #333;padding:8px 12px;text-align:left;background:#f8fafc;font-weight:600;vertical-align:top;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    td: "border:1px solid #333;padding:8px 12px;vertical-align:top;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    colgroup: "",
+    col: "",
+
+    // Links
+    a: "color:inherit;text-decoration:underline;text-underline-offset:2px",
+
+    // Mark (highlights)
+    mark: "background:#fef08a;padding:0 2px;border-radius:2px;color:inherit",
 };
 
-// data-color → resolved hex value for <mark data-color="...">
-const HIGHLIGHT_MAP: Record<string, string> = {
-  yellow: "#fef08a",
-  pink: "#fecaca",
-  mint: "#bbf7d0",
-  blue: "#bfdbfe",
-  purple: "#e9d5ff",
+// Highlight colors - data-color attribute এর জন্য
+const HIGHLIGHT_COLORS: Record<string, string> = {
+    yellow: "#fef08a",
+    pink: "#fecaca",
+    mint: "#bbf7d0",
+    blue: "#bfdbfe",
+    purple: "#e9d5ff",
 };
 
+// দুইটা style string merge করে - duplicate property এড়াতে object দিয়ে merge
 function mergeStyles(base: string, override: string): string {
-  if (!base) return override;
-  if (!override) return base;
-  // Override wins — append after base so cascade keeps the last value in email clients
-  return `${base};${override}`;
+    if (!base) return override;
+    if (!override) return base;
+
+    const baseObj: Record<string, string> = {};
+    const overrideObj: Record<string, string> = {};
+
+    base.split(";").filter(Boolean).forEach((rule) => {
+        const idx = rule.indexOf(":");
+        if (idx === -1) return;
+        const prop = rule.slice(0, idx).trim();
+        const val = rule.slice(idx + 1).trim();
+        if (prop && val) baseObj[prop] = val;
+    });
+
+    override.split(";").filter(Boolean).forEach((rule) => {
+        const idx = rule.indexOf(":");
+        if (idx === -1) return;
+        const prop = rule.slice(0, idx).trim();
+        const val = rule.slice(idx + 1).trim();
+        if (prop && val) overrideObj[prop] = val;
+    });
+
+    const merged = { ...baseObj, ...overrideObj };
+    return Object.entries(merged)
+        .map(([k, v]) => `${k}:${v}`)
+        .join(";");
 }
 
+// প্রতিটা element এ style attribute যোগ করে (structure চেঞ্জ না করে)
 function processElement(el: Element): void {
-  const tag = el.tagName.toLowerCase();
+    const tag = el.tagName.toLowerCase();
+    const base = TAG_STYLES[tag] ?? "";
 
-  // -- tag base styles --
-  const base = TAG_STYLES[tag] ?? "";
-
-  // -- pre's inner code should not double-background --
-  if (tag === "code" && el.closest("pre")) {
-    el.setAttribute("style", mergeStyles("background:none;padding:0;border-radius:0", el.getAttribute("style") ?? ""));
-    for (const child of el.children) processElement(child);
-    return;
-  }
-
-  // -- highlight data-color resolution --
-  if (tag === "mark") {
-    const color = el.getAttribute("data-color");
-    const bg = color ? HIGHLIGHT_MAP[color] ?? "" : "";
-    const markStyle = bg ? `background-color:${bg};color:inherit;padding:0.1em 0` : "color:inherit;padding:0.1em 0";
-    const existing = el.getAttribute("style") ?? "";
-    el.setAttribute("style", mergeStyles(markStyle, existing));
-    for (const child of el.children) processElement(child);
-    return;
-  }
-
-  // -- task list items --
-  if (tag === "li" && el.getAttribute("data-type") === "taskItem") {
-    const checked = el.getAttribute("data-checked") === "true";
-    const taskStyle = "display:flex;gap:8px;align-items:flex-start;margin:0.25em 0;list-style:none";
-    const existing = el.getAttribute("style") ?? "";
-    el.setAttribute("style", mergeStyles(taskStyle, existing));
-
-    // Inject a plain-text checkbox prefix since <input> won't render in most contexts
-    const checkbox = document.createElement("span");
-    checkbox.setAttribute("aria-hidden", "true");
-    checkbox.setAttribute(
-      "style",
-      `flex-shrink:0;display:inline-block;width:14px;height:14px;border:1.5px solid #999;border-radius:3px;margin-top:3px;${checked ? "background:#333;color:#fff;text-align:center;font-size:10px;line-height:14px" : ""}`
-    );
-    checkbox.textContent = checked ? "✓" : "";
-    el.insertBefore(checkbox, el.firstChild);
-
-    if (checked) {
-      // strike the text content
-      const content = el.querySelector("div, p");
-      if (content) {
-        const existing2 = content.getAttribute("style") ?? "";
-        content.setAttribute("style", mergeStyles("text-decoration:line-through;color:#999", existing2));
-      }
+    // Special case 1: <code> inside <pre> এ আলাদা style
+    if (tag === "code" && el.closest("pre")) {
+        const codeInPreStyle =
+            "background:none;padding:0;border-radius:0;font-family:'JetBrains Mono','Geist Mono','SF Mono',Menlo,monospace";
+        const existing = el.getAttribute("style") ?? "";
+        el.setAttribute("style", mergeStyles(codeInPreStyle, existing));
     }
-    for (const child of el.children) processElement(child);
-    return;
-  }
+    // Special case 2: <mark> এ data-color attribute থাকলে সেই color use করা
+    else if (tag === "mark") {
+        const colorAttr = el.getAttribute("data-color");
+        const bgColor = colorAttr
+            ? (HIGHLIGHT_COLORS[colorAttr] ?? HIGHLIGHT_COLORS.yellow)
+            : HIGHLIGHT_COLORS.yellow;
+        const markStyle = `background:${bgColor};padding:0 2px;border-radius:2px;color:inherit`;
+        const existing = el.getAttribute("style") ?? "";
+        el.setAttribute("style", mergeStyles(markStyle, existing));
+    }
+    // Special case 3: Task list items
+    else if (tag === "li" && el.getAttribute("data-type") === "taskItem") {
+        const isChecked = el.getAttribute("data-checked") === "true";
+        let taskStyle =
+            "display:flex;gap:8px;align-items:flex-start;margin:0.25em 0;list-style:none;font-family:'Newsreader','Iowan Old Style',Georgia,serif";
+        if (isChecked) {
+            taskStyle += ";text-decoration:line-through;color:#999";
+        }
+        const existing = el.getAttribute("style") ?? "";
+        el.setAttribute("style", mergeStyles(taskStyle, existing));
+    }
+    // Task list wrapper
+    else if (tag === "ul" && el.getAttribute("data-type") === "taskList") {
+        const taskListStyle = "list-style:none;padding-left:0;margin:0.5em 0";
+        const existing = el.getAttribute("style") ?? "";
+        el.setAttribute("style", mergeStyles(taskListStyle, existing));
+    }
+    // General case: সব ট্যাগে base style apply করা
+    else if (base) {
+        const existing = el.getAttribute("style") ?? "";
+        el.setAttribute("style", mergeStyles(base, existing));
+    }
 
-  // -- task list wrapper --
-  if (tag === "ul" && el.getAttribute("data-type") === "taskList") {
-    el.setAttribute("style", mergeStyles("list-style:none;padding-left:0;margin:0.5em 0", el.getAttribute("style") ?? ""));
-    for (const child of el.children) processElement(child);
-    return;
-  }
-
-  // -- general case: apply tag base + keep existing inline styles --
-  if (base) {
-    const existing = el.getAttribute("style") ?? "";
-    el.setAttribute("style", mergeStyles(base, existing));
-  }
-
-  for (const child of el.children) processElement(child);
+    // সব children recursively process করা
+    for (const child of el.children) {
+        processElement(child);
+    }
 }
 
 /**
- * Takes the raw HTML string from `editor.getHTML()` (or `editorRef.current?.getHTML()`)
- * and returns a new HTML string with all styles inlined.
+ * এডিটরের HTML নিয়ে inline styles যোগ করে দেয়।
  *
- * @param html - the HTML string from Tiptap's getHTML()
- * @returns self-contained HTML with inline styles, no external CSS needed
+ * @param html - editor.getHTML() থেকে আসা raw HTML
+ * @returns সম্পূর্ণ inline-styled HTML (কোনো CSS import লাগবে না)
  */
 export function getInlinedHTML(html: string): string {
-  if (!html) return "";
+    if (!html) return "";
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
 
-  for (const child of Array.from(doc.body.children)) {
-    processElement(child);
-  }
+    for (const child of Array.from(doc.body.children)) {
+        processElement(child);
+    }
 
-  return doc.body.innerHTML;
+    return doc.body.innerHTML;
 }

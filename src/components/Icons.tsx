@@ -428,4 +428,28 @@ export const Icons = {
             <circle cx="12" cy="12" r="3" />
         </I>
     ),
+    embed: (p: IconProps) => (
+        <I {...p}>
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="M10 10l-2 2 2 2M14 10l2 2-2 2" />
+        </I>
+    ),
+    video: (p: IconProps) => (
+        <I {...p}>
+            <rect x="3" y="6" width="13" height="12" rx="2" />
+            <path d="M16 10l5-3v10l-5-3z" />
+        </I>
+    ),
+    fitWidth: (p: IconProps) => (
+        <I {...p}>
+            <path d="M3 6v12M21 6v12" />
+            <path d="M7 12h10M9 9l-3 3 3 3M15 9l3 3-3 3" />
+        </I>
+    ),
+    fitPage: (p: IconProps) => (
+        <I {...p}>
+            <rect x="6" y="4" width="12" height="16" rx="1" />
+            <path d="M9 9h6M9 13h6M9 17h4" />
+        </I>
+    ),
 };

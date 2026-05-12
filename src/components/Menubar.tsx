@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import type { Editor } from "@tiptap/react";
 import { Dropdown, MenuItem, Sep, Caps } from "./Dropdown.tsx";
 import { Icons } from "./Icons.tsx";
+import { getInlinedHTML } from "../utils/getInlinedHTML.ts";
 
 type Mode = "compact" | "document" | "fullscreen";
 type Theme = "light" | "dark" | "system" | "custom";
@@ -141,6 +142,16 @@ function FileMenu({ editor, close }: { editor: Editor | null; close: () => void 
                 }}
             />
             <MenuItem icon={<Icons.download size={15} />} label="Export to Word…" />
+            <MenuItem
+                icon={<Icons.source size={15} />}
+                label="Copy as inlined HTML"
+                onClick={() => {
+                    const html = editor?.getHTML() ?? "";
+                    navigator.clipboard.writeText(getInlinedHTML(html));
+                    close();
+                }}
+                disabled={!editor}
+            />
             <Sep />
             <MenuItem
                 icon={<Icons.print size={15} />}
@@ -298,9 +309,12 @@ function ViewMenu({
 }
 
 function InsertMenu({ editor, close }: { editor: Editor | null; close: () => void }) {
-    const insertImage = () => {
-        const url = window.prompt("Image URL:");
-        if (url) editor?.chain().focus().setImage({ src: url }).run();
+    const openImage = () => {
+        window.dispatchEvent(new CustomEvent("inkwell:open-image-dialog"));
+        close();
+    };
+    const openIframe = () => {
+        window.dispatchEvent(new CustomEvent("inkwell:open-iframe-dialog"));
         close();
     };
     const insertLink = () => {
@@ -308,15 +322,16 @@ function InsertMenu({ editor, close }: { editor: Editor | null; close: () => voi
         if (url) editor?.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
         close();
     };
-    const insertTable = () => {
-        editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+    const openTablePicker = () => {
+        window.dispatchEvent(new CustomEvent("inkwell:open-table-picker"));
         close();
     };
     return (
         <>
-            <MenuItem icon={<Icons.image size={15} />} label="Image…" onClick={insertImage} />
+            <MenuItem icon={<Icons.image size={15} />} label="Image…" onClick={openImage} />
+            <MenuItem icon={<Icons.embed size={15} />} label="Embed / iframe…" onClick={openIframe} />
             <MenuItem icon={<Icons.link size={15} />} label="Link…" shortcut="⌘ K" onClick={insertLink} />
-            <MenuItem icon={<Icons.table size={15} />} label="Table" onClick={insertTable} />
+            <MenuItem icon={<Icons.table size={15} />} label="Table…" onClick={openTablePicker} />
             <Sep />
             <MenuItem icon={<Icons.comment size={15} />} label="Comment" shortcut="⌘ ⌥ M" />
             <MenuItem icon={<Icons.emoji size={15} />} label="Emojis…" />

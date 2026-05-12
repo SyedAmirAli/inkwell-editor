@@ -2,6 +2,9 @@
 import { useRef, useEffect, useState } from "react";
 import { useEditorState } from "@tiptap/react";
 import { LinkDialog } from "./LinkDialog.tsx";
+import { ImageUploadDialog } from "./ImageUploadDialog.tsx";
+import { IframeDialog } from "./IframeDialog.tsx";
+import { TablePicker } from "./TablePicker.tsx";
 import type { Editor } from "@tiptap/react";
 import { Dropdown } from "./Dropdown.tsx";
 import { Icons } from "./Icons.tsx";
@@ -14,8 +17,11 @@ interface ToolbarProps {
     onMode: (m: Mode) => void;
     aiOpen: boolean;
     onToggleAI: () => void;
+    onOpenComment?: () => void;
     showSource: boolean;
     onToggleSource: () => void;
+    freeCanvas?: boolean;
+    onToggleFreeCanvas?: () => void;
 }
 
 const BLOCK_TYPES = [
@@ -76,21 +82,272 @@ const BLOCK_TYPES = [
     },
 ];
 
-const TEXT_COLORS = ["", "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"];
-const HIGHLIGHT_COLORS = ["", "#fef08a", "#fecaca", "#bbf7d0", "#bfdbfe", "#e9d5ff"];
+const TEXT_COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"];
+const HIGHLIGHT_COLORS = ["#fef08a", "#fecaca", "#bbf7d0", "#bfdbfe", "#e9d5ff"];
+const FONT_REGISTRY_KEY = "inkwell.customFonts";
+const FONT_FAMILIES = [
+    { label: "Poppins", value: '"Poppins", system-ui, sans-serif', family: "Poppins" },
+    { label: "Inter", value: "Inter, system-ui, sans-serif", family: "Inter" },
+    { label: "Georgia", value: "Georgia, serif", family: "Georgia" },
+    { label: "Times New Roman", value: '"Times New Roman", serif', family: "Times New Roman" },
+    { label: "Arial", value: "Arial, sans-serif", family: "Arial" },
+    { label: "Courier New", value: '"Courier New", monospace', family: "Courier New" },
+];
 
-export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, onToggleSource }: ToolbarProps) {
+type CustomFont = {
+    family: string;
+    url: string;
+    source: string;
+    value: string;
+};
+
+const normalizeHex = (raw: string): string | null => {
+    const t = raw.trim().replace(/^#/, "");
+    if (/^[0-9a-f]{3}$/i.test(t)) return "#" + t.split("").map((c) => c + c).join("").toLowerCase();
+    if (/^[0-9a-f]{6}$/i.test(t)) return "#" + t.toLowerCase();
+    return null;
+};
+
+const readRecent = (key: string): string[] => {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        const v = JSON.parse(raw);
+        return Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, 8) : [];
+    } catch {
+        return [];
+    }
+};
+
+const readCustomFonts = (): CustomFont[] => {
+    try {
+        const raw = localStorage.getItem(FONT_REGISTRY_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed)
+            ? parsed.filter(
+                  (x) =>
+                      x &&
+                      typeof x.family === "string" &&
+                      typeof x.url === "string" &&
+                      typeof x.source === "string" &&
+                      typeof x.value === "string",
+              )
+            : [];
+    } catch {
+        return [];
+    }
+};
+
+const sanitizeFontUrl = (raw: string) => {
+    const v = raw.trim();
+    if (!v) return null;
+    try {
+        const url = new URL(v, window.location.href);
+        if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+        return url.toString();
+    } catch {
+        return null;
+    }
+};
+
+const injectFontStylesheet = (id: string, href: string) => {
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+};
+
+function ColorPanel({
+    presets,
+    recentKey,
+    onPick,
+    onClear,
+    clearLabel,
+}: {
+    presets: string[];
+    /**
+     * Apply the color. `commit` is true for explicit user actions (preset/recent
+     * click, Apply button) and false for live updates from the native color
+     * picker drag — the parent should *only* close the dropdown on commit.
+     */
+    onPick: (color: string, commit: boolean) => void;
+    onClear: () => void;
+    clearLabel: string;
+    recentKey: string;
+}) {
+    const [recent, setRecent] = useState<string[]>(() => readRecent(recentKey));
+    const [hex, setHex] = useState<string>(recent[0] || presets[0] || "#000000");
+    const [hexError, setHexError] = useState(false);
+
+    const commitRecent = (color: string) => {
+        const next = [color, ...recent.filter((c) => c.toLowerCase() !== color.toLowerCase())].slice(0, 8);
+        setRecent(next);
+        try {
+            localStorage.setItem(recentKey, JSON.stringify(next));
+        } catch {
+            /* ignore quota errors */
+        }
+    };
+
+    /** Live preview — applies to editor but does NOT save to recent or close. */
+    const applyLive = (color: string) => {
+        const norm = normalizeHex(color);
+        if (!norm) {
+            setHexError(true);
+            return;
+        }
+        setHexError(false);
+        setHex(norm);
+        onPick(norm, false);
+    };
+
+    /** User explicitly committed (preset click, Apply, recent click). */
+    const applyCommit = (color: string) => {
+        const norm = normalizeHex(color);
+        if (!norm) {
+            setHexError(true);
+            return;
+        }
+        setHexError(false);
+        setHex(norm);
+        commitRecent(norm);
+        onPick(norm, true);
+    };
+
+    return (
+        <div
+            className="rte-color-panel"
+            onMouseDown={(e) => e.preventDefault()}
+            onPointerDownCapture={(e) => e.stopPropagation()}
+        >
+            <div className="rte-color-presets">
+                <button
+                    type="button"
+                    className="rte-color-swatch rte-color-swatch--clear"
+                    title={clearLabel}
+                    onClick={onClear}
+                >
+                    <svg viewBox="0 0 16 16" width="10" height="10" stroke="currentColor" strokeWidth="2" fill="none">
+                        <path d="M3 13L13 3" strokeLinecap="round" />
+                    </svg>
+                </button>
+                {presets.map((c) => (
+                    <button
+                        type="button"
+                        key={c}
+                        className="rte-color-swatch"
+                        title={c}
+                        style={{ background: c }}
+                        onClick={() => applyCommit(c)}
+                    />
+                ))}
+            </div>
+
+            <div className="rte-color-divider" />
+
+            <div className="rte-color-custom-row">
+                <label
+                    className="rte-color-picker-trigger"
+                    title="Pick a custom color, then click Apply to commit"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <input
+                        type="color"
+                        value={normalizeHex(hex) || "#000000"}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onChange={(e) => applyLive(e.target.value)}
+                    />
+                    <span
+                        className="rte-color-picker-swatch"
+                        style={{ background: normalizeHex(hex) || "#000000" }}
+                    />
+                </label>
+                <input
+                    type="text"
+                    className="rte-color-hex"
+                    data-error={hexError || undefined}
+                    value={hex}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                        setHex(e.target.value);
+                        setHexError(false);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyCommit(hex);
+                        }
+                    }}
+                    placeholder="#000000"
+                    maxLength={7}
+                    spellCheck={false}
+                />
+                <button type="button" className="rte-color-apply" onClick={() => applyCommit(hex)}>
+                    Apply
+                </button>
+            </div>
+
+            {recent.length > 0 && (
+                <>
+                    <div className="rte-color-divider" />
+                    <div className="rte-color-recents">
+                        <span className="rte-color-recents-label">Recent</span>
+                        <div className="rte-color-presets">
+                            {recent.map((c) => (
+                                <button
+                                    type="button"
+                                    key={c}
+                                    className="rte-color-swatch"
+                                    title={c}
+                                    style={{ background: c }}
+                                    onClick={() => applyCommit(c)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
+export function Toolbar({
+    editor,
+    mode,
+    onMode,
+    aiOpen,
+    onToggleAI,
+    onOpenComment,
+    showSource,
+    onToggleSource,
+    freeCanvas,
+    onToggleFreeCanvas,
+}: ToolbarProps) {
     const [showBlockMenu, setShowBlockMenu] = useState(false);
     const [showColorMenu, setShowColorMenu] = useState(false);
     const [showHLMenu, setShowHLMenu] = useState(false);
     const [showLinkDialog, setShowLinkDialog] = useState(false);
+    const [showImageDialog, setShowImageDialog] = useState(false);
+    const [showIframeDialog, setShowIframeDialog] = useState(false);
+    const [showTablePicker, setShowTablePicker] = useState(false);
+    const [customFonts, setCustomFonts] = useState<CustomFont[]>(() => readCustomFonts());
     const [linkUrl, setLinkUrl] = useState("");
     const [linkTitle, setLinkTitle] = useState("");
+    const tableBtnRef = useRef<HTMLButtonElement>(null);
 
     const blockRef = useRef<HTMLDivElement>(null);
     const colorRef = useRef<HTMLDivElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
+    const fontRef = useRef<HTMLDivElement>(null);
     const savedRange = useRef<{ from: number; to: number } | null>(null);
+    const [showFontMenu, setShowFontMenu] = useState(false);
+    const [fontName, setFontName] = useState("");
+    const [fontUrl, setFontUrl] = useState("");
+    const [fontSource, setFontSource] = useState("Google Fonts CSS");
 
     // ── Reactive editor state — re-renders on every transaction ──────────
     const state = useEditorState({
@@ -165,12 +422,13 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
         alignRight: false,
         alignJustify: false,
         activeBlock: "Paragraph",
-        fontSize: null,
-        fontFamily: null,
+                fontSize: null,
+                fontFamily: null,
     };
 
     const fontSizeLabel = s.fontSize != null ? `${s.fontSize}` : "—";
-
+    const fontFamilyLabel =
+        [...FONT_FAMILIES, ...customFonts].find((f) => f.value === s.fontFamily)?.label ?? (s.fontFamily ? "Custom" : "Font");
     const openLinkDialog = () => {
         if (!editor) return;
         const { from, to } = editor.state.selection;
@@ -210,21 +468,89 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
         editor.chain().focus().setFontSize(`${next}px`).run();
     };
 
-    const insertImage = () => {
-        const url = window.prompt("Image URL:", "https://");
-        if (url) editor?.chain().focus().setImage({ src: url }).run();
+    useEffect(() => {
+        try {
+            localStorage.setItem(FONT_REGISTRY_KEY, JSON.stringify(customFonts));
+        } catch {
+            /* ignore storage errors */
+        }
+    }, [customFonts]);
+
+    useEffect(() => {
+        customFonts.forEach((font) => {
+            injectFontStylesheet(`inkwell-font-${font.family.toLowerCase().replace(/\s+/g, "-")}`, font.url);
+        });
+    }, [customFonts]);
+
+    const applyFontFamily = (family: string | null) => {
+        if (!editor) return;
+        const chain = editor.chain().focus();
+        if (!family) {
+            chain.unsetFontFamily().run();
+        } else {
+            chain.setFontFamily(family).run();
+        }
+        setShowFontMenu(false);
+    };
+
+    const addCustomFont = () => {
+        const family = fontName.trim();
+        const url = sanitizeFontUrl(fontUrl);
+        if (!family || !url) return;
+        const value = `"${family}", system-ui, sans-serif`;
+        const next = [
+            { family, url, source: fontSource, value },
+            ...customFonts.filter((f) => f.family.toLowerCase() !== family.toLowerCase()),
+        ].slice(0, 60);
+        setCustomFonts(next);
+        injectFontStylesheet(`inkwell-font-${family.toLowerCase().replace(/\s+/g, "-")}`, url);
+        setFontName("");
+        setFontUrl("");
+    };
+
+    const insertImage = () => setShowImageDialog(true);
+    const insertIframe = () => setShowIframeDialog(true);
+
+    useEffect(() => {
+        const openImg = () => setShowImageDialog(true);
+        const openFr = () => setShowIframeDialog(true);
+        const openTbl = () => setShowTablePicker(true);
+        window.addEventListener("inkwell:open-image-dialog", openImg);
+        window.addEventListener("inkwell:open-iframe-dialog", openFr);
+        window.addEventListener("inkwell:open-table-picker", openTbl);
+        return () => {
+            window.removeEventListener("inkwell:open-image-dialog", openImg);
+            window.removeEventListener("inkwell:open-iframe-dialog", openFr);
+            window.removeEventListener("inkwell:open-table-picker", openTbl);
+        };
+    }, []);
+
+    const handleImageInsert = (src: string) => {
+        editor?.chain().focus().setImage({ src }).run();
+    };
+
+    const handleIframeInsert = (attrs: {
+        src: string;
+        title?: string;
+        ratio?: string;
+        width?: string;
+        height?: string;
+    }) => {
+        editor?.chain().focus().setIframe(attrs).run();
     };
 
     const Btn = ({
         icon,
         on,
         onClick,
+        onMouseDown,
         title,
         disabled,
     }: {
         icon: React.ReactNode;
         on?: boolean;
         onClick?: () => void;
+        onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void;
         title: string;
         disabled?: boolean;
     }) => (
@@ -232,6 +558,7 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
             className="rte-tb-btn"
             data-on={on || undefined}
             onClick={onClick}
+            onMouseDown={onMouseDown}
             title={title}
             aria-label={title}
             disabled={disabled}
@@ -313,6 +640,117 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
                         <Icons.plus size={13} />
                     </button>
                 </span>
+                <div ref={fontRef} style={{ position: "relative" }}>
+                    <button
+                        className="rte-tb-pill rte-tb-font"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => setShowFontMenu((v) => !v)}
+                        aria-haspopup="true"
+                        aria-expanded={showFontMenu}
+                        title="Font family"
+                    >
+                        <span>{fontFamilyLabel}</span>
+                        <Icons.chevronDown size={12} />
+                    </button>
+                    <Dropdown open={showFontMenu} onClose={() => setShowFontMenu(false)} anchorRef={fontRef}>
+                        <div style={{ minWidth: 260, maxWidth: 320, padding: 6 }}>
+                            <button
+                                type="button"
+                                className="rte-mi"
+                                data-on={!s.fontFamily || undefined}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => applyFontFamily(null)}
+                            >
+                                <span className="rte-mi-ic"><Icons.textColor size={15} /></span>
+                                <span className="rte-mi-lbl">Default</span>
+                            </button>
+                            {FONT_FAMILIES.map((font) => (
+                                <button
+                                    key={font.label}
+                                    type="button"
+                                    className="rte-mi"
+                                    data-on={s.fontFamily === font.value || undefined}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => applyFontFamily(font.value)}
+                                    style={{
+                                        color: s.fontFamily === font.value ? "#fff" : "#000",
+                                        background: s.fontFamily === font.value ? "#000" : "transparent",
+                                    }}
+                                >
+                                    <span className="rte-mi-ic">
+                                        <span style={{ fontFamily: font.value, fontSize: 14, lineHeight: 1 }}>Aa</span>
+                                    </span>
+                                    <span className="rte-mi-lbl" style={{ fontFamily: font.value }}>
+                                        {font.label}
+                                    </span>
+                                </button>
+                            ))}
+                            {customFonts.length > 0 && <div className="rte-mi-sep" />}
+                            {customFonts.map((font) => (
+                                <button
+                                    key={font.family}
+                                    type="button"
+                                    className="rte-mi"
+                                    data-on={s.fontFamily === font.value || undefined}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => applyFontFamily(font.value)}
+                                    style={{
+                                        color: s.fontFamily === font.value ? "#fff" : "#000",
+                                        background: s.fontFamily === font.value ? "#000" : "transparent",
+                                    }}
+                                >
+                                    <span className="rte-mi-ic">
+                                        <span style={{ fontFamily: font.value, fontSize: 14, lineHeight: 1 }}>Aa</span>
+                                    </span>
+                                    <span className="rte-mi-lbl" style={{ fontFamily: font.value }}>
+                                        {font.family}
+                                    </span>
+                                </button>
+                            ))}
+                            <div style={{ padding: "8px 4px 4px" }}>
+                                <div className="rte-font-add-title">Add font source</div>
+                                <input
+                                    className="rte-font-input"
+                                    value={fontName}
+                                    onChange={(e) => setFontName(e.target.value)}
+                                    placeholder="Font family name"
+                                />
+                                <textarea
+                                    className="rte-font-input"
+                                    value={fontUrl}
+                                    onChange={(e) => setFontUrl(e.target.value)}
+                                    placeholder={`Paste a font source here, for example:\n@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");\n\nor a direct @font-face block:\n@font-face {\n  font-family: "MyFont";\n  src: url("https://cdn.example.com/fonts/MyFont.woff2") format("woff2");\n}`}
+                                    rows={6}
+                                />
+                                <div className="rte-font-helper">
+                                    Paste a full stylesheet URL, an <code>@import</code> line, or raw
+                                    <code>@font-face</code> CSS. The editor will load it on demand and keep it saved locally.
+                                </div>
+                                <div className="rte-font-source-row">
+                                    <button
+                                        type="button"
+                                        className="rte-font-source-btn"
+                                        data-on={fontSource === "Google Fonts CSS" || undefined}
+                                        onClick={() => setFontSource("Google Fonts CSS")}
+                                    >
+                                        CSS
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="rte-font-source-btn"
+                                        data-on={fontSource === "Direct CDN" || undefined}
+                                        onClick={() => setFontSource("Direct CDN")}
+                                    >
+                                        CDN
+                                    </button>
+                                    <button type="button" className="rte-font-add-btn" onClick={addCustomFont}>
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Dropdown>
+                </div>
                 <Div />
 
                 {/* Inline marks — all show active state */}
@@ -350,58 +788,59 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
                         onClick={() => setShowColorMenu((v) => !v)}
                     />
                     <Dropdown open={showColorMenu} onClose={() => setShowColorMenu(false)} anchorRef={colorRef}>
-                        <div style={{ display: "flex", gap: 4, padding: "6px 8px" }}>
-                            {TEXT_COLORS.map((c) => (
-                                <button
-                                    key={c}
-                                    className="rte-color-swatch"
-                                    title={c || "Default"}
-                                    style={{
-                                        background: c || "var(--fg)",
-                                        border: c ? "1.5px solid var(--border-strong)" : "1.5px solid var(--fg)",
-                                    }}
-                                    onClick={() => {
-                                        c
-                                            ? editor.chain().focus().setColor(c).run()
-                                            : editor.chain().focus().unsetColor().run();
-                                        setShowColorMenu(false);
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        <ColorPanel
+                            presets={TEXT_COLORS}
+                            recentKey="inkwell.recentTextColors"
+                            clearLabel="Reset to default text color"
+                            onPick={(c, commit) => {
+                                editor.chain().focus().setColor(c).run();
+                                if (commit) setShowColorMenu(false);
+                            }}
+                            onClear={() => {
+                                editor.chain().focus().unsetColor().run();
+                                setShowColorMenu(false);
+                            }}
+                        />
                     </Dropdown>
                 </div>
 
-                {/* Highlight */}
+                {/* Highlight / cell background */}
                 <div ref={highlightRef} style={{ position: "relative" }}>
                     <Btn
                         icon={<Icons.highlight />}
                         on={s.isHighlight || showHLMenu}
-                        title="Highlight"
+                        title={
+                            editor?.isActive("table")
+                                ? "Cell background color"
+                                : "Highlight"
+                        }
                         onClick={() => setShowHLMenu((v) => !v)}
                     />
                     <Dropdown open={showHLMenu} onClose={() => setShowHLMenu(false)} anchorRef={highlightRef}>
-                        <div style={{ display: "flex", gap: 4, padding: "6px 8px" }}>
-                            {HIGHLIGHT_COLORS.map((c) => (
-                                <button
-                                    key={c}
-                                    className="rte-color-swatch"
-                                    title={c || "None"}
-                                    style={{
-                                        background: c || "transparent",
-                                        border: c
-                                            ? "1.5px solid var(--border-strong)"
-                                            : "1.5px dashed var(--border-strong)",
-                                    }}
-                                    onClick={() => {
-                                        c
-                                            ? editor.chain().focus().setHighlight({ color: c }).run()
-                                            : editor.chain().focus().unsetHighlight().run();
-                                        setShowHLMenu(false);
-                                    }}
-                                />
-                            ))}
-                        </div>
+                        <ColorPanel
+                            presets={HIGHLIGHT_COLORS}
+                            recentKey="inkwell.recentHLColors"
+                            clearLabel={editor?.isActive("table") ? "Clear cell background" : "Remove highlight"}
+                            onPick={(c, commit) => {
+                                // When the selection is inside a table, paint the
+                                // current/selected cells. Otherwise apply a normal
+                                // text highlight mark.
+                                if (editor?.isActive("table")) {
+                                    editor.chain().focus().setCellAttribute("backgroundColor", c).run();
+                                } else {
+                                    editor.chain().focus().setHighlight({ color: c }).run();
+                                }
+                                if (commit) setShowHLMenu(false);
+                            }}
+                            onClear={() => {
+                                if (editor?.isActive("table")) {
+                                    editor.chain().focus().setCellAttribute("backgroundColor", null).run();
+                                } else {
+                                    editor.chain().focus().unsetHighlight().run();
+                                }
+                                setShowHLMenu(false);
+                            }}
+                        />
                     </Dropdown>
                 </div>
 
@@ -409,15 +848,18 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
                 <Btn
                     icon={<Icons.case />}
                     title="Change case"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                         const { from, to } = editor.state.selection;
                         const text = editor.state.doc.textBetween(from, to);
                         if (!text) return;
-                        const upper = text === text.toUpperCase();
+                        const upper = text === text.toUpperCase() && text !== text.toLowerCase();
+                        const transformed = upper ? text.toLowerCase() : text.toUpperCase();
                         editor
                             .chain()
                             .focus()
-                            .insertContentAt({ from, to }, upper ? text.toLowerCase() : text.toUpperCase())
+                            .deleteRange({ from, to })
+                            .insertContent(transformed)
                             .run();
                     }}
                 />
@@ -435,12 +877,28 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
                     <Icons.link />
                 </button>
                 <Btn icon={<Icons.image />} title="Insert image" onClick={insertImage} />
-                <Btn
-                    icon={<Icons.table />}
+                <Btn icon={<Icons.embed />} title="Embed iframe / video" onClick={insertIframe} />
+                <button
+                    ref={tableBtnRef}
+                    className="rte-tb-btn"
+                    data-on={showTablePicker || undefined}
                     title="Insert table"
-                    onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                    aria-label="Insert table"
+                    aria-haspopup="true"
+                    aria-expanded={showTablePicker}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowTablePicker((v) => !v)}
+                >
+                    <Icons.table />
+                </button>
+                <Btn
+                    icon={<Icons.comment />}
+                    title="Comment (⌘ ⌥ M)"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                        onOpenComment?.();
+                    }}
                 />
-                <Btn icon={<Icons.comment />} title="Comment (⌘ ⌥ M)" />
                 <Div />
 
                 {/* Alignment */}
@@ -503,6 +961,14 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
 
                 {/* View */}
                 <Btn icon={<Icons.source />} on={showSource} title="Source code" onClick={onToggleSource} />
+                {onToggleFreeCanvas && (
+                    <Btn
+                        icon={freeCanvas ? <Icons.fitPage /> : <Icons.fitWidth />}
+                        on={freeCanvas}
+                        title={freeCanvas ? "Snap to page width" : "Fill available width"}
+                        onClick={onToggleFreeCanvas}
+                    />
+                )}
                 <Btn
                     icon={mode === "fullscreen" ? <Icons.exitFullscreen /> : <Icons.fullscreen />}
                     on={mode === "fullscreen"}
@@ -521,6 +987,28 @@ export function Toolbar({ editor, mode, onMode, aiOpen, onToggleAI, showSource, 
                 onApply={handleLinkApply}
                 onRemove={handleLinkRemove}
                 onClose={() => setShowLinkDialog(false)}
+            />
+
+            {/* Image upload + Filerobot editor */}
+            <ImageUploadDialog
+                open={showImageDialog}
+                onClose={() => setShowImageDialog(false)}
+                onInsert={handleImageInsert}
+            />
+
+            {/* Iframe embed */}
+            <IframeDialog
+                open={showIframeDialog}
+                onClose={() => setShowIframeDialog(false)}
+                onInsert={handleIframeInsert}
+            />
+
+            {/* Table grid picker */}
+            <TablePicker
+                editor={editor}
+                triggerRef={tableBtnRef}
+                open={showTablePicker}
+                onClose={() => setShowTablePicker(false)}
             />
         </>
     );

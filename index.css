@@ -231,8 +231,8 @@
     --z-floating: 20;
     --z-dropdown: 30;
     --z-tooltip: 40;
-    --z-modal: 50;
-    --z-toast: 60;
+    --z-modal: 60;
+    --z-toast: 61;
 }
 
 /* ─── SEMANTIC CHROME TYPE TOKENS ───────────────────────────────────────

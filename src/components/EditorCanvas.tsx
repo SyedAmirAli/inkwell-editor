@@ -21,8 +21,10 @@ const TitleLink = Link.extend({
     };
   },
 });
-import Image from "@tiptap/extension-image";
-import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table";
+import { ResizableImage } from "../extensions/ResizableImage.ts";
+import { IframeEmbed } from "../extensions/IframeEmbed.ts";
+import { TableCellEnhanced, TableHeaderEnhanced } from "../extensions/TableCellEnhanced.ts";
+import { Table, TableRow } from "@tiptap/extension-table";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Color from "@tiptap/extension-color";
@@ -32,12 +34,14 @@ import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import FontFamily from "@tiptap/extension-font-family";
 import { Icons } from "./Icons.tsx";
+import { TableControls } from "./TableControls.tsx";
 
 type Mode = "compact" | "document" | "fullscreen";
 
 interface EditorCanvasProps {
   mode: Mode;
   showSource: boolean;
+  freeCanvas?: boolean;
   onEditorReady?: (editor: Editor) => void;
   initialContent?: string;
   onChange?: (html: string) => void;
@@ -204,81 +208,97 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
   );
 }
 
-/* ── Table context toolbar ─────────────────────────────────────────── */
+const COMMAND_ITEMS = [
+  { label: "Adjust tone", action: "tone", icon: <Icons.case /> },
+  { label: "Fix spelling & grammar", action: "grammar", icon: <Icons.spell size={15} /> },
+  { label: "Extend text", action: "extend", icon: <Icons.plus size={15} /> },
+  { label: "Reduce text", action: "reduce", icon: <Icons.minus size={15} /> },
+  { label: "Simplify text", action: "simplify", icon: <Icons.comment size={15} /> },
+  { label: "Emojify", action: "emojify", icon: <Icons.sparkle size={15} /> },
+  { label: "Ask AI", action: "ask", icon: <Icons.sparkle size={15} /> },
+  { label: "Complete sentence", action: "complete", icon: <Icons.chevronRight size={15} /> },
+  { label: "Summarize", action: "summarize", icon: <Icons.doc size={15} /> },
+  { label: "Translate", action: "translate", icon: <Icons.translate size={15} /> },
+];
 
-// Minimal SVG icons for row / column operations
-const TblRowAbove  = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="6" width="12" height="7" rx=".5"/><line x1="7" y1="6" x2="7" y2="13"/><line x1="1" y1="9.5" x2="13" y2="9.5"/><line x1="7" y1="1" x2="7" y2="4.5"/><line x1="5" y1="2.75" x2="9" y2="2.75"/></svg>;
-const TblRowBelow  = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="1" width="12" height="7" rx=".5"/><line x1="7" y1="1" x2="7" y2="8"/><line x1="1" y1="4.5" x2="13" y2="4.5"/><line x1="7" y1="9.5" x2="7" y2="13"/><line x1="5" y1="11.25" x2="9" y2="11.25"/></svg>;
-const TblRowDel    = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="1" width="12" height="12" rx=".5"/><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="5" x2="13" y2="5"/><line x1="1" y1="9" x2="13" y2="9"/><line x1="3.5" y1="6.2" x2="6" y2="7.8"/><line x1="6" y1="6.2" x2="3.5" y2="7.8"/></svg>;
-const TblColBefore = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="6" y="1" width="7" height="12" rx=".5"/><line x1="6" y1="7" x2="13" y2="7"/><line x1="1" y1="7" x2="4.5" y2="7"/><line x1="2.75" y1="5" x2="2.75" y2="9"/></svg>;
-const TblColAfter  = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="1" width="7" height="12" rx=".5"/><line x1="1" y1="7" x2="8" y2="7"/><line x1="9.5" y1="7" x2="13" y2="7"/><line x1="11.25" y1="5" x2="11.25" y2="9"/></svg>;
-const TblColDel    = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="1" width="12" height="12" rx=".5"/><line x1="5" y1="1" x2="5" y2="13"/><line x1="9" y1="1" x2="9" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="6.2" y1="3.5" x2="7.8" y2="6"/><line x1="7.8" y1="3.5" x2="6.2" y2="6"/></svg>;
-const TblMerge     = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="1" width="12" height="12" rx=".5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="7" y1="1" x2="7" y2="5"/><line x1="7" y1="9" x2="7" y2="13"/><line x1="5" y1="6" x2="7" y2="7.5"/><line x1="9" y1="6" x2="7" y2="7.5"/></svg>;
-const TblSplit     = () => <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"><rect x="1" y="1" width="12" height="12" rx=".5"/><line x1="1" y1="7" x2="13" y2="7"/><line x1="7" y1="1" x2="7" y2="5"/><line x1="7" y1="9" x2="7" y2="13"/><line x1="7" y1="5.5" x2="5" y2="4"/><line x1="7" y1="5.5" x2="9" y2="4"/></svg>;
-
-function TableToolbar({ editor }: { editor: Editor }) {
+function SlashMenuPortal({ editor }: { editor: Editor }) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const update = () => {
-      if (!editor.isActive("table")) { setPos(null); return; }
-      try {
-        const { $from } = editor.state.selection;
-        const domInfo = editor.view.domAtPos($from.pos);
-        let el: Element | null = domInfo.node.nodeType === Node.ELEMENT_NODE
-          ? (domInfo.node as Element)
-          : (domInfo.node as Text).parentElement;
-        // Walk up to the <table> element
-        while (el && el.tagName !== "TABLE") el = el.parentElement;
-        if (!el) { setPos(null); return; }
-        const rect = el.getBoundingClientRect();
-        setPos({
-          top:  rect.top  + window.scrollY - 44,
-          left: rect.left + rect.width / 2,
-        });
-      } catch { setPos(null); }
+      const { $from, empty } = editor.state.selection;
+      const parent = $from.parent;
+      if (!parent.isTextblock || parent.type.name !== "paragraph") {
+        setOpen(false);
+        setPos(null);
+        return;
+      }
+
+      const text = parent.textBetween(0, $from.parentOffset, "\n", "\n");
+      const shouldOpen = text.startsWith("/") && $from.parentOffset >= 1 && text.trim().length >= 1;
+      if (!shouldOpen || !empty) {
+        setOpen(false);
+        setPos(null);
+        return;
+      }
+
+      const coords = editor.view.coordsAtPos($from.pos);
+      setOpen(true);
+      setPos({ top: coords.bottom + window.scrollY + 6, left: coords.left });
     };
 
     editor.on("selectionUpdate", update);
     editor.on("update", update);
-    editor.on("blur", () => setPos(null));
+    editor.on("focus", update);
+    editor.on("blur", () => {
+      setOpen(false);
+      setPos(null);
+    });
 
     return () => {
       editor.off("selectionUpdate", update);
       editor.off("update", update);
-      editor.off("blur", () => setPos(null));
+      editor.off("focus", update);
+      editor.off("blur", () => {
+        setOpen(false);
+        setPos(null);
+      });
     };
   }, [editor]);
 
-  if (!pos) return null;
-
-  const run = (fn: () => void) => (e: React.MouseEvent) => { e.preventDefault(); fn(); };
+  if (!open || !pos) return null;
 
   return createPortal(
     <div
-      className="rte-float-toolbar"
-      style={{ position: "absolute", top: pos.top, left: pos.left, transform: "translateX(-50%)", zIndex: 50 }}
+      className="rte-dropdown"
+      style={{
+        position: "absolute",
+        top: pos.top,
+        left: pos.left,
+        zIndex: 60,
+        minWidth: 260,
+        padding: 6,
+        boxShadow: "var(--shadow-1)",
+      }}
       onMouseDown={(e) => e.preventDefault()}
     >
-      {/* Row controls */}
-      <button className="rte-float-btn" title="Insert row above" onMouseDown={run(() => editor.chain().focus().addRowBefore().run())}><TblRowAbove/></button>
-      <button className="rte-float-btn" title="Insert row below" onMouseDown={run(() => editor.chain().focus().addRowAfter().run())}><TblRowBelow/></button>
-      <button className="rte-float-btn" title="Delete row"       onMouseDown={run(() => editor.chain().focus().deleteRow().run())}><TblRowDel/></button>
-      <span className="rte-float-div"/>
-      {/* Column controls */}
-      <button className="rte-float-btn" title="Insert column left"  onMouseDown={run(() => editor.chain().focus().addColumnBefore().run())}><TblColBefore/></button>
-      <button className="rte-float-btn" title="Insert column right" onMouseDown={run(() => editor.chain().focus().addColumnAfter().run())}><TblColAfter/></button>
-      <button className="rte-float-btn" title="Delete column"       onMouseDown={run(() => editor.chain().focus().deleteColumn().run())}><TblColDel/></button>
-      <span className="rte-float-div"/>
-      {/* Cell controls */}
-      <button className="rte-float-btn" title="Merge cells" onMouseDown={run(() => editor.chain().focus().mergeCells().run())}><TblMerge/></button>
-      <button className="rte-float-btn" title="Split cell"  onMouseDown={run(() => editor.chain().focus().splitCell().run())}><TblSplit/></button>
-      <span className="rte-float-div"/>
-      {/* Delete table */}
-      <button className="rte-float-btn" title="Delete table" style={{ color: "var(--danger, #ef4444)" }}
-        onMouseDown={run(() => editor.chain().focus().deleteTable().run())}>
-        <Icons.trash size={13}/>
-      </button>
+      {COMMAND_ITEMS.map((item) => (
+        <button
+          key={item.action}
+          className="rte-mi"
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setOpen(false);
+            if (!editor) return;
+            editor.chain().focus().deleteRange({ from: editor.state.selection.from - 1, to: editor.state.selection.from }).run();
+          }}
+        >
+          <span className="rte-mi-ic">{item.icon}</span>
+          <span className="rte-mi-lbl">{item.label}</span>
+        </button>
+      ))}
     </div>,
     document.body
   );
@@ -319,7 +339,7 @@ const editor = useEditor({
 `;
 
 /* ── Main canvas ───────────────────────────────────────────────────── */
-export function EditorCanvas({ mode, showSource, onEditorReady, initialContent, onChange }: EditorCanvasProps) {
+export function EditorCanvas({ mode, showSource, freeCanvas, onEditorReady, initialContent, onChange }: EditorCanvasProps) {
   const [sourceValue, setSourceValue] = useState("");
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -339,11 +359,12 @@ export function EditorCanvas({ mode, showSource, onEditorReady, initialContent, 
         linkOnPaste: true,
         HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       }),
-      Image.configure({ inline: false, allowBase64: true }),
+      ResizableImage.configure({ inline: false, allowBase64: true }),
+      IframeEmbed,
       Table.configure({ resizable: true }),
       TableRow,
-      TableCell,
-      TableHeader,
+      TableCellEnhanced,
+      TableHeaderEnhanced,
       TaskList,
       TaskItem.configure({ nested: true }),
       TextStyle,
@@ -381,11 +402,12 @@ export function EditorCanvas({ mode, showSource, onEditorReady, initialContent, 
   if (mode === "compact") return null;
 
   return (
-    <div className="rte-canvas" data-mode={mode}>
-      <div className="rte-canvas-inner" data-mode={mode}>
+    <div className="rte-canvas" data-mode={mode} data-free={freeCanvas || undefined}>
+      <div className="rte-canvas-inner" data-mode={mode} data-free={freeCanvas || undefined}>
         {editor && <BubbleMenuPortal editor={editor} />}
         {editor && <FloatingMenuPortal editor={editor} />}
-        {editor && <TableToolbar editor={editor} />}
+        {editor && <SlashMenuPortal editor={editor} />}
+        {editor && <TableControls editor={editor} />}
 
         {showSource ? (
           <textarea

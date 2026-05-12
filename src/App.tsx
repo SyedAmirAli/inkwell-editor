@@ -6,6 +6,7 @@ import { StatusBar } from "./components/StatusBar.tsx";
 import { EditorCanvas } from "./components/EditorCanvas.tsx";
 import { CompactEditor } from "./components/CompactEditor.tsx";
 import { AIPanel } from "./components/AIPanel.tsx";
+import { CommentPanel, type CommentItem } from "./components/CommentPanel.tsx";
 import { Icons } from "./components/Icons.tsx";
 
 type Mode = "compact" | "document" | "fullscreen";
@@ -40,9 +41,20 @@ export default function App() {
     const [custom, setCustom] = useState({ fg: "#1a1a1a", bg: "#f4ede2" });
     const [editor, setEditor] = useState<Editor | null>(null);
     const [showSource, setShowSource] = useState(false);
+    const [freeCanvas, setFreeCanvas] = useState<boolean>(
+        () => localStorage.getItem("inkwell.freeCanvas") === "1",
+    );
+    const [commentOpen, setCommentOpen] = useState(false);
+    const [commentQuote, setCommentQuote] = useState("");
+    const [comments, setComments] = useState<CommentItem[]>([]);
+
+    useEffect(() => {
+        localStorage.setItem("inkwell.freeCanvas", freeCanvas ? "1" : "0");
+    }, [freeCanvas]);
 
     // Pattern A — imperative ref: call editorRef.current?.getHTML() on save/submit
     const editorRef = useRef<Editor | null>(null);
+    window.editorRef = editorRef.current;
 
     // Apply theme whenever theme/custom changes
     useEffect(() => {
@@ -81,6 +93,27 @@ export default function App() {
         setEditor(e);
         editorRef.current = e;
     }, []);
+
+    const openCommentPanel = useCallback(() => {
+        const e = editorRef.current;
+        if (!e) return;
+        const { from, to, empty } = e.state.selection;
+        const quote = empty ? "" : e.state.doc.textBetween(from, to, " ");
+        setCommentQuote(quote);
+        setCommentOpen(true);
+    }, []);
+
+    const createComment = useCallback((note: string) => {
+        setComments((curr) => [
+            {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                quote: commentQuote,
+                note,
+                createdAt: Date.now(),
+            },
+            ...curr,
+        ]);
+    }, [commentQuote]);
 
     return (
         <>
@@ -138,6 +171,9 @@ export default function App() {
                                 onToggleAI={() => setAiOpen((v) => !v)}
                                 showSource={showSource}
                                 onToggleSource={() => setShowSource((v) => !v)}
+                                onOpenComment={openCommentPanel}
+                                freeCanvas={freeCanvas}
+                                onToggleFreeCanvas={() => setFreeCanvas((v) => !v)}
                             />
                         )}
 
@@ -145,10 +181,25 @@ export default function App() {
                             {mode === "compact" ? (
                                 <CompactEditor />
                             ) : (
-                                <EditorCanvas mode={mode} showSource={showSource} onEditorReady={onEditorReady} />
+                                <EditorCanvas
+                                    mode={mode}
+                                    showSource={showSource}
+                                    freeCanvas={freeCanvas}
+                                    onEditorReady={onEditorReady}
+                                />
                             )}
                             {mode !== "compact" && (
                                 <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} editor={editor} />
+                            )}
+                            {mode !== "compact" && (
+                                <CommentPanel
+                                    open={commentOpen}
+                                    onClose={() => setCommentOpen(false)}
+                                    editor={editor}
+                                    quote={commentQuote}
+                                    onCreate={createComment}
+                                    comments={comments}
+                                />
                             )}
                         </div>
 

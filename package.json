@@ -25,8 +25,12 @@
     "@tiptap/pm": "^3.23.1",
     "@tiptap/react": "^3.23.1",
     "@tiptap/starter-kit": "^3.23.1",
+    "konva": "9",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-filerobot-image-editor": "4.9.1",
+    "react-konva": "18.2.10",
+    "styled-components": "6"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.0",
