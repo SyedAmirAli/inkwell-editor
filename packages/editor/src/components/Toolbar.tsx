@@ -11,6 +11,8 @@ import { Icons } from "./Icons.tsx";
 
 type Mode = "compact" | "document" | "fullscreen";
 
+import type { FontDef } from "../types";
+
 interface ToolbarProps {
     editor: Editor | null;
     mode: Mode;
@@ -22,6 +24,12 @@ interface ToolbarProps {
     onToggleSource: () => void;
     freeCanvas?: boolean;
     onToggleFreeCanvas?: () => void;
+    /**
+     * Fonts to append to the toolbar's font-family picker, alongside the
+     * built-in list. If `url` is set, the editor injects a `<link>` for it
+     * so the font is loaded automatically.
+     */
+    defaultFonts?: FontDef[];
 }
 
 const BLOCK_TYPES = [
@@ -326,7 +334,16 @@ export function Toolbar({
     onToggleSource,
     freeCanvas,
     onToggleFreeCanvas,
+    defaultFonts,
 }: ToolbarProps) {
+    // Adapt the consumer-supplied FontDef[] into the same shape the rest of
+    // this component uses for built-in / custom fonts.
+    const providedFonts = (defaultFonts ?? []).map((f) => ({
+        label: f.name,
+        value: f.family,
+        family: f.name,
+        url: f.url ?? null,
+    }));
     const [showBlockMenu, setShowBlockMenu] = useState(false);
     const [showColorMenu, setShowColorMenu] = useState(false);
     const [showHLMenu, setShowHLMenu] = useState(false);
@@ -428,7 +445,8 @@ export function Toolbar({
 
     const fontSizeLabel = s.fontSize != null ? `${s.fontSize}` : "—";
     const fontFamilyLabel =
-        [...FONT_FAMILIES, ...customFonts].find((f) => f.value === s.fontFamily)?.label ?? (s.fontFamily ? "Custom" : "Font");
+        [...FONT_FAMILIES, ...providedFonts, ...customFonts].find((f) => f.value === s.fontFamily)?.label ??
+        (s.fontFamily ? "Custom" : "Font");
     const openLinkDialog = () => {
         if (!editor) return;
         const { from, to } = editor.state.selection;
@@ -481,6 +499,17 @@ export function Toolbar({
             injectFontStylesheet(`inkwell-font-${font.family.toLowerCase().replace(/\s+/g, "-")}`, font.url);
         });
     }, [customFonts]);
+
+    useEffect(() => {
+        providedFonts.forEach((font) => {
+            if (font.url) {
+                injectFontStylesheet(
+                    `inkwell-default-${font.family.toLowerCase().replace(/\s+/g, "-")}`,
+                    font.url,
+                );
+            }
+        });
+    }, [defaultFonts]);
 
     const applyFontFamily = (family: string | null) => {
         if (!editor) return;
@@ -670,6 +699,28 @@ export function Toolbar({
                             {FONT_FAMILIES.map((font) => (
                                 <button
                                     key={font.label}
+                                    type="button"
+                                    className="rte-mi"
+                                    data-on={s.fontFamily === font.value || undefined}
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => applyFontFamily(font.value)}
+                                    style={{
+                                        color: s.fontFamily === font.value ? "#fff" : "#000",
+                                        background: s.fontFamily === font.value ? "#000" : "transparent",
+                                    }}
+                                >
+                                    <span className="rte-mi-ic">
+                                        <span style={{ fontFamily: font.value, fontSize: 14, lineHeight: 1 }}>Aa</span>
+                                    </span>
+                                    <span className="rte-mi-lbl" style={{ fontFamily: font.value }}>
+                                        {font.label}
+                                    </span>
+                                </button>
+                            ))}
+                            {providedFonts.length > 0 && <div className="rte-mi-sep" />}
+                            {providedFonts.map((font) => (
+                                <button
+                                    key={`provided-${font.family}`}
                                     type="button"
                                     className="rte-mi"
                                     data-on={s.fontFamily === font.value || undefined}

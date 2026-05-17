@@ -1,6 +1,28 @@
-/* Webfonts must precede @import "tailwindcss" for Tailwind's preprocessor */
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=JetBrains+Mono:wght@400;500;600&display=swap");
-@import "tailwindcss";
+
+/* Minimal reset for the editor chrome — covers only what Tailwind's preflight
+   used to give us. Scoped to elements inside .rte-shell so we don't touch
+   consumer-owned content. */
+.rte-shell,
+.rte-shell *,
+.rte-shell *::before,
+.rte-shell *::after {
+    box-sizing: border-box;
+}
+.rte-shell button {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+.rte-shell input,
+.rte-shell textarea,
+.rte-shell select {
+    font: inherit;
+    color: inherit;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────
    Inkwell Editor — design tokens

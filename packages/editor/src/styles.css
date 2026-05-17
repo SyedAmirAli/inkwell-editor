@@ -1,0 +1,6 @@
+/* Aggregate stylesheet used in dev (via the demo's vite alias) and as the
+   target of the `@syedamirali/inkwell-editor/styles.css` subpath in
+   production after the library is built. */
+@import "./styles/tokens.css";
+@import "./styles/shell.css";
+@import "./styles/editor.css";

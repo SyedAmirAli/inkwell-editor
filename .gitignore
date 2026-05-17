@@ -1,4 +1,13 @@
 node_modules
+**/node_modules
 dist
+**/dist
 .DS_Store
 *.local
+/zunk
+package-lock.json
+*.zip
+*.tar.gz
+.vite
+**/.vite
+*.log
