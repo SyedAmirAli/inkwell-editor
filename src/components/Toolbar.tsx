@@ -558,7 +558,10 @@ export function Toolbar({
             className="rte-tb-btn"
             data-on={on || undefined}
             onClick={onClick}
-            onMouseDown={onMouseDown}
+            onMouseDown={(event) => {
+                event.preventDefault();
+                onMouseDown?.(event);
+            }}
             title={title}
             aria-label={title}
             disabled={disabled}

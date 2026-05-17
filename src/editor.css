@@ -25,6 +25,13 @@
     height: 0;
 }
 
+/* Give empty paragraphs a real line box so the caret can land next to a
+   floated table/image/iframe — otherwise the click target collapses and
+   the user can't position the cursor in the wrap-around area. */
+.ProseMirror p.is-empty {
+    min-height: 1.5em;
+}
+
 /* Task list */
 .rte-content ul[data-type="taskList"] {
     list-style: none;
@@ -71,6 +78,47 @@
 /* Table */
 .rte-content table {
     position: relative;
+}
+.rte-content .tableWrapper:has(> table[data-table-align="left"]) {
+    float: left;
+    width: fit-content;
+    max-width: 72%;
+    margin: 0.35em 1.1em 0.75em 0;
+    overflow-x: visible;
+}
+.rte-content .tableWrapper:has(> table[data-table-align="right"]) {
+    float: right;
+    width: fit-content;
+    max-width: 72%;
+    margin: 0.35em 0 0.75em 1.1em;
+    overflow-x: visible;
+}
+.rte-content .tableWrapper:has(> table[data-table-align="center"]) {
+    width: fit-content;
+    max-width: 100%;
+    margin: 1em auto;
+}
+.rte-content .tableWrapper:has(> table[data-table-align="full"]) {
+    clear: both;
+    width: 100%;
+    margin: 1em 0;
+}
+.rte-content .tableWrapper:has(> table[data-table-align]) > table {
+    float: none !important;
+    margin: 0 !important;
+}
+.rte-content tr[data-row-height] > th,
+.rte-content tr[data-row-height] > td {
+    box-sizing: border-box;
+    height: inherit;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+}
+.rte-content tr[data-row-height] > th > *,
+.rte-content tr[data-row-height] > td > * {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 .rte-content .selectedCell {
     background: var(--selection);
@@ -707,6 +755,10 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     padding: 0;
 }
 .rte-tt-btn:hover { background: var(--surface-2, var(--canvas)); color: var(--fg-strong); }
+.rte-tt-btn[data-on] {
+    background: var(--ring);
+    color: var(--ink-0);
+}
 .rte-tt-btn.rte-tt-danger:hover { color: oklch(60% 0.2 25); }
 .rte-tt-btn.rte-tt-danger-strong {
     color: oklch(55% 0.2 25);
@@ -741,6 +793,84 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     background: var(--surface-2, var(--canvas));
 }
 .rte-table-drag-handle:active { cursor: grabbing; }
+
+.rte-table-resize-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    z-index: 59;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel, var(--surface));
+    box-shadow: var(--shadow-1);
+    cursor: ew-resize;
+    padding: 0;
+}
+.rte-table-resize-handle::before {
+    content: "";
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    color: var(--fg-muted);
+}
+.rte-table-resize-handle:hover {
+    background: var(--surface-2, var(--canvas));
+    color: var(--fg);
+}
+
+/* Horizontal indicator line drawn at the drop position while the table
+   drag handle is being dragged. */
+.rte-table-drop-line {
+    position: absolute;
+    height: 2px;
+    background: var(--ring);
+    border-radius: 2px;
+    z-index: 80;
+    pointer-events: none;
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 18%, transparent);
+}
+
+/* Right-edge handle for table width resize. Vertical strip sitting just
+   outside the table so it doesn't collide with the column-resize hot zone
+   at the last cell's right border. */
+.rte-table-edge-handle {
+    position: absolute;
+    width: 6px;
+    z-index: 58;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: ew-resize;
+    opacity: 0.18;
+    transition: opacity 120ms ease, background 120ms ease;
+}
+.rte-table-edge-handle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 28px;
+    background: var(--ink-12);
+    border-radius: 2px;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+.rte-table-edge-handle:hover,
+.rte-table-edge-handle:active {
+    opacity: 1;
+    background: color-mix(in oklch, var(--ink-12) 8%, transparent);
+}
+.rte-table-edge-handle:hover::after,
+.rte-table-edge-handle:active::after {
+    opacity: 1;
+}
 
 /* Per-row handle on the left edge */
 .rte-table-row-handle {
@@ -839,6 +969,34 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     transform: translateY(-50%);
 }
 .rte-table-row-handle .rte-table-rc-del:hover { transform: translateY(-50%) scale(1.1); }
+
+.rte-table-row-resize {
+    position: absolute;
+    left: 22px;
+    bottom: -4px;
+    width: var(--rte-row-resize-width, 240px);
+    height: 8px;
+    border: 0;
+    background: transparent;
+    cursor: ns-resize;
+    padding: 0;
+    opacity: 0;
+}
+.rte-table-row-handle:hover .rte-table-row-resize,
+.rte-table-row-handle[data-active] .rte-table-row-resize {
+    opacity: 1;
+}
+.rte-table-row-resize::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 3px;
+    height: 2px;
+    background: var(--ring);
+    border-radius: var(--r-pill);
+    opacity: 0.5;
+}
 
 /* Column handle layout: label centered, + left/right of col, 🗑 below */
 .rte-table-col-handle .rte-table-rc-plus--left { left: -10px; top: 50%; transform: translateY(-50%); }
@@ -953,9 +1111,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     user-select: none;
 }
 .rte-content .rte-img-wrap:active { cursor: grabbing; }
-.rte-content .rte-img-wrap[data-align="left"]   { float: left; margin-right: 16px; clear: both; }
-.rte-content .rte-img-wrap[data-align="right"]  { float: right; margin-left: 16px; clear: both; }
-.rte-content .rte-img-wrap[data-align="center"] { margin-left: auto; margin-right: auto; float: none; }
+.rte-content .rte-img-wrap[data-align="left"]   { float: left; margin-right: 16px; }
+.rte-content .rte-img-wrap[data-align="right"]  { float: right; margin-left: 16px; }
+.rte-content .rte-img-wrap[data-align="center"] { margin-left: auto; margin-right: auto; float: none; clear: both; }
 
 .rte-content .rte-img-el {
     display: block;
@@ -1088,9 +1246,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
 .rte-content .rte-iframe-wrap[data-ratio="4:3"]  { aspect-ratio: 4 / 3; }
 .rte-content .rte-iframe-wrap[data-ratio="1:1"]  { aspect-ratio: 1 / 1; }
 .rte-content .rte-iframe-wrap[data-ratio="auto"] { aspect-ratio: auto; min-height: 240px; }
-.rte-content .rte-iframe-wrap[data-align="left"]   { float: left;  margin-right: 16px; clear: both; }
-.rte-content .rte-iframe-wrap[data-align="right"]  { float: right; margin-left: 16px;  clear: both; }
-.rte-content .rte-iframe-wrap[data-align="center"] { float: none; margin-left: auto; margin-right: auto; }
+.rte-content .rte-iframe-wrap[data-align="left"]   { float: left;  margin-right: 16px; }
+.rte-content .rte-iframe-wrap[data-align="right"]  { float: right; margin-left: 16px; }
+.rte-content .rte-iframe-wrap[data-align="center"] { float: none; margin-left: auto; margin-right: auto; clear: both; }
 
 .rte-content .rte-iframe-wrap iframe {
     position: absolute;

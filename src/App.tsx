@@ -89,6 +89,12 @@ export default function App() {
         return () => document.removeEventListener("keydown", onKey);
     }, [mode]);
 
+    useEffect(() => {
+        const openAI = () => setAiOpen(true);
+        window.addEventListener("inkwell:insert-ai-prompt", openAI);
+        return () => window.removeEventListener("inkwell:insert-ai-prompt", openAI);
+    }, []);
+
     const onEditorReady = useCallback((e: Editor) => {
         setEditor(e);
         editorRef.current = e;

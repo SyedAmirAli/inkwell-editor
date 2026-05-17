@@ -11,6 +11,12 @@ interface AIPanelProps {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  focusSnippets?: FocusSnippet[];
+}
+
+interface FocusSnippet {
+  id: string;
+  text: string;
 }
 
 const SUGGESTIONS = [
@@ -21,20 +27,63 @@ const SUGGESTIONS = [
   "Make it more concise",
 ];
 
+const previewText = (text: string, wordLimit = 14) => {
+  const clean = text.replace(/\s+/g, " ").trim();
+  const words = clean.split(" ");
+  if (words.length <= wordLimit && clean.length <= 140) return clean;
+  return `${words.slice(0, wordLimit).join(" ")}...`;
+};
+
 export function AIPanel({ open, onClose, editor }: AIPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [input, setInput]   = useState("");
+  const [focusSnippets, setFocusSnippets] = useState<FocusSnippet[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const bodyRef  = useRef<HTMLDivElement>(null);
+
+  const resizeInput = () => {
+    const textarea = inputRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
 
   useEffect(() => {
     if (open && !collapsed) setTimeout(() => inputRef.current?.focus(), 60);
   }, [open, collapsed]);
 
   useEffect(() => {
+    resizeInput();
+  }, [input, focusSnippets]);
+
+  useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    const insertPromptText = (event: Event) => {
+      const text = (event as CustomEvent<{ text?: string }>).detail?.text?.trim();
+      if (!text) return;
+
+      setCollapsed(false);
+      setFocusSnippets((current) => [
+        ...current,
+        {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          text,
+        },
+      ]);
+
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        resizeInput();
+      });
+    };
+
+    window.addEventListener("inkwell:insert-ai-prompt", insertPromptText);
+    return () => window.removeEventListener("inkwell:insert-ai-prompt", insertPromptText);
+  }, []);
 
   if (!open) return null;
 
@@ -49,14 +98,19 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
 
   const handleSend = (text = input) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
-    setMessages((m) => [...m, { role: "user", content: trimmed }]);
+    const focusPayload = focusSnippets
+      .map((item, index) => `Focus ${index + 1}:\n${item.text}`)
+      .join("\n\n");
+    const payload = [focusPayload, trimmed].filter(Boolean).join("\n\nPrompt:\n");
+    if (!payload) return;
+    setMessages((m) => [...m, { role: "user", content: trimmed || "Improve the focused selection.", focusSnippets }]);
     setInput("");
+    setFocusSnippets([]);
     // Stub AI response
     setTimeout(() => {
       setMessages((m) => [...m, {
         role: "assistant",
-        content: `I received your message: "${trimmed}". This is a UI prototype — connect to a real AI API to generate responses. You can use the Anthropic API (claude.ai/code) or OpenAI.`,
+        content: `I received your message: "${payload}". This is a UI prototype — connect to a real AI API to generate responses. You can use the Anthropic API (claude.ai/code) or OpenAI.`,
       }]);
     }, 600);
   };
@@ -109,6 +163,15 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
               <div style={{ font: "600 11px/1 var(--font-ui)", color: "var(--fg-muted)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {msg.role === "user" ? "You" : "AI"}
               </div>
+              {msg.focusSnippets && msg.focusSnippets.length > 0 && (
+                <div className="rte-ai-message-focus">
+                  {msg.focusSnippets.map((item, index) => (
+                    <span key={item.id} title={item.text}>
+                      Focus {index + 1}: {previewText(item.text, 10)}
+                    </span>
+                  ))}
+                </div>
+              )}
               <div style={{ font: "400 13px/1.5 var(--font-ui)", whiteSpace: "pre-wrap" }}>{msg.content}</div>
             </div>
           ))
@@ -120,12 +183,36 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
           <Icons.doc size={12}/> Current document
           <span className="x" style={{ cursor: "pointer" }}>×</span>
         </span>
-        <div className="rte-ai-input">
-          <input
+        <div className="rte-ai-input" onClick={() => inputRef.current?.focus()}>
+          {focusSnippets.length > 0 && (
+            <div className="rte-ai-focus-list" aria-label="Focused editor selection">
+              {focusSnippets.map((item, index) => (
+                <span className="rte-ai-focus-chip" key={item.id} title={item.text}>
+                  <span className="rte-ai-focus-label">Focus {index + 1}</span>
+                  <span className="rte-ai-focus-text">{previewText(item.text)}</span>
+                  <button
+                    type="button"
+                    aria-label={`Remove focus ${index + 1}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setFocusSnippets((current) => current.filter((entry) => entry.id !== item.id));
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <textarea
             ref={inputRef}
             placeholder="Ask AI…"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            rows={1}
+            onChange={(e) => {
+              setInput(e.target.value);
+              resizeInput();
+            }}
             onKeyDown={handleKeyDown}
             aria-label="AI prompt"
           />

@@ -1,63 +1,45 @@
-/**
- * getInlinedHTML
- *
- * এডিটরের HTML আউটপুট নেয় এবং প্রতিটা ট্যাগে style attribute যোগ করে।
- * HTML স্ট্রাকচার একদম একই থাকে - শুধু inline styles যোগ হয়।
- *
- * ব্যবহার:
- *   import { getInlinedHTML } from "@/utils/getInlinedHTML";
- *   const inlinedHTML = getInlinedHTML(editor.getHTML());
- *   // এখন এই HTML রেন্ডার করতে কোনো CSS import লাগবে না!
- */
+const EXPORT_ROOT_STYLE =
+    "box-sizing:border-box;width:100%;max-width:100%;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6;color:#1f2933;background:transparent;overflow-wrap:break-word";
 
-// প্রতিটা HTML ট্যাগের জন্য স্টাইল - index.css এর .rte-content থেকে নেওয়া
 const TAG_STYLES: Record<string, string> = {
-    // Headings - exact sizes from CSS variables
-    h1: "font-size:56px;line-height:1.1;font-weight:700;letter-spacing:-0.02em;margin:0 0 0.4em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-    h2: "font-size:32px;line-height:1.25;font-weight:700;letter-spacing:-0.01em;margin:1.4em 0 0.4em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-    h3: "font-size:24px;line-height:1.25;font-weight:600;margin:1.4em 0 0.3em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-    h4: "font-size:18px;line-height:1.45;font-weight:600;margin:1.2em 0 0.25em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-    h5: "font-size:16px;line-height:1.45;font-weight:600;margin:1.2em 0 0.25em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-    h6: "font-size:14px;line-height:1.45;font-weight:600;margin:1em 0 0.25em 0;color:#666;font-family:'Newsreader','Iowan Old Style',Georgia,serif",
-
-    // Paragraph and inline
-    p: "margin:0 0 0.8em 0;line-height:1.6;font-family:'Newsreader','Iowan Old Style',Georgia,serif;font-size:16px;color:#1a1a2e",
+    div: "box-sizing:border-box;max-width:100%",
+    span: "box-sizing:border-box",
+    p: "margin:0 0 0.8em 0;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6;color:#1f2933",
+    h1: "margin:0 0 0.45em 0;font-family:Georgia,'Times New Roman',serif;font-size:42px;line-height:1.12;font-weight:700;letter-spacing:-0.02em;color:#111827",
+    h2: "margin:1.35em 0 0.45em 0;font-family:Georgia,'Times New Roman',serif;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-0.01em;color:#111827",
+    h3: "margin:1.25em 0 0.35em 0;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;font-weight:700;color:#111827",
+    h4: "margin:1.15em 0 0.3em 0;font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.35;font-weight:700;color:#111827",
+    h5: "margin:1em 0 0.25em 0;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.4;font-weight:700;color:#111827",
+    h6: "margin:1em 0 0.25em 0;font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.4;font-weight:700;color:#4b5563",
     strong: "font-weight:700",
+    b: "font-weight:700",
     em: "font-style:italic",
-    u: "text-decoration:underline",
+    i: "font-style:italic",
+    u: "text-decoration:underline;text-underline-offset:2px",
     s: "text-decoration:line-through",
-
-    // Code
-    code: "font-family:'JetBrains Mono','Geist Mono','SF Mono',Menlo,monospace;font-size:0.92em;padding:0.1em 0.35em;border-radius:4px;background:#f8fafc;color:inherit",
-    pre: "font-family:'JetBrains Mono','Geist Mono','SF Mono',Menlo,monospace;font-size:0.92em;background:#f8fafc;border:1px solid #e8e8f0;border-radius:8px;padding:16px;overflow-x:auto;margin:1em 0",
-
-    // Blocks
-    blockquote: "margin:1em 0;padding-left:1em;border-left:2px solid #333;color:#666;font-style:italic;font-family:'Newsreader','Iowan Old Style',Georgia,serif",
-    hr: "border:0;height:1px;background:#e8e8f0;margin:2em 0",
-
-    // Lists
-    ul: "padding-left:1.5em;margin:0.5em 0;list-style-type:disc",
-    ol: "padding-left:1.5em;margin:0.5em 0;list-style-type:decimal",
-    li: "margin:0.25em 0;line-height:1.6;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-
-    // Tables
-    table: "border-collapse:collapse;width:100%;margin:1em 0;font-family:'Newsreader','Iowan Old Style',Georgia,serif",
-    thead: "",
-    tbody: "",
-    tr: "",
-    th: "border:1px solid #333;padding:8px 12px;text-align:left;background:#f8fafc;font-weight:600;vertical-align:top;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
-    td: "border:1px solid #333;padding:8px 12px;vertical-align:top;font-family:'Newsreader','Iowan Old Style',Georgia,serif;color:#1a1a2e",
+    a: "color:#0f172a;text-decoration:underline;text-underline-offset:2px",
+    code: "font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:0.92em;padding:0.1em 0.35em;border-radius:4px;background:#f1f5f9;color:#0f172a",
+    pre: "box-sizing:border-box;margin:1em 0;padding:16px;max-width:100%;overflow-x:auto;border:1px solid #d7dee8;border-radius:8px;background:#f8fafc;color:#0f172a;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;line-height:1.55;white-space:pre",
+    blockquote: "margin:1em 0;padding:0.1em 0 0.1em 1em;border-left:3px solid #94a3b8;color:#475569;font-family:Georgia,'Times New Roman',serif;font-style:italic",
+    hr: "border:0;height:1px;background:#d7dee8;margin:2em 0",
+    ul: "margin:0.75em 0 0.9em 0;padding-left:1.5em;list-style-position:outside;list-style-type:disc",
+    ol: "margin:0.75em 0 0.9em 0;padding-left:1.5em;list-style-position:outside;list-style-type:decimal",
+    li: "margin:0.25em 0;padding-left:0.15em;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.6;color:#1f2933",
+    table: "box-sizing:border-box;width:100%;max-width:100%;margin:1em 0;border-collapse:collapse;border-spacing:0;table-layout:auto;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.45;color:#1f2933",
+    thead: "box-sizing:border-box",
+    tbody: "box-sizing:border-box",
+    tr: "box-sizing:border-box",
+    th: "box-sizing:border-box;border:1px solid #9ca3af;padding:8px 12px;background:#f8fafc;text-align:left;vertical-align:top;font-weight:700;color:#111827",
+    td: "box-sizing:border-box;border:1px solid #9ca3af;padding:8px 12px;background:transparent;text-align:left;vertical-align:top;color:#1f2933",
     colgroup: "",
     col: "",
-
-    // Links
-    a: "color:inherit;text-decoration:underline;text-underline-offset:2px",
-
-    // Mark (highlights)
     mark: "background:#fef08a;padding:0 2px;border-radius:2px;color:inherit",
+    img: "display:block;max-width:100%;height:auto;margin:0 auto;border:0",
+    iframe: "display:block;width:100%;height:100%;border:0",
+    label: "box-sizing:border-box",
+    input: "box-sizing:border-box",
 };
 
-// Highlight colors - data-color attribute এর জন্য
 const HIGHLIGHT_COLORS: Record<string, string> = {
     yellow: "#fef08a",
     pink: "#fecaca",
@@ -66,95 +48,183 @@ const HIGHLIGHT_COLORS: Record<string, string> = {
     purple: "#e9d5ff",
 };
 
-// দুইটা style string merge করে - duplicate property এড়াতে object দিয়ে merge
-function mergeStyles(base: string, override: string): string {
-    if (!base) return override;
-    if (!override) return base;
+function parseStyle(style: string): Record<string, string> {
+    return style
+        .split(";")
+        .map((rule) => rule.trim())
+        .filter(Boolean)
+        .reduce<Record<string, string>>((acc, rule) => {
+            const idx = rule.indexOf(":");
+            if (idx === -1) return acc;
+            const prop = rule.slice(0, idx).trim().toLowerCase();
+            const value = rule.slice(idx + 1).trim();
+            if (prop && value) acc[prop] = value;
+            return acc;
+        }, {});
+}
 
-    const baseObj: Record<string, string> = {};
-    const overrideObj: Record<string, string> = {};
-
-    base.split(";").filter(Boolean).forEach((rule) => {
-        const idx = rule.indexOf(":");
-        if (idx === -1) return;
-        const prop = rule.slice(0, idx).trim();
-        const val = rule.slice(idx + 1).trim();
-        if (prop && val) baseObj[prop] = val;
-    });
-
-    override.split(";").filter(Boolean).forEach((rule) => {
-        const idx = rule.indexOf(":");
-        if (idx === -1) return;
-        const prop = rule.slice(0, idx).trim();
-        const val = rule.slice(idx + 1).trim();
-        if (prop && val) overrideObj[prop] = val;
-    });
-
-    const merged = { ...baseObj, ...overrideObj };
-    return Object.entries(merged)
-        .map(([k, v]) => `${k}:${v}`)
+function stringifyStyle(style: Record<string, string>): string {
+    return Object.entries(style)
+        .filter(([, value]) => Boolean(value))
+        .map(([prop, value]) => `${prop}:${value}`)
         .join(";");
 }
 
-// প্রতিটা element এ style attribute যোগ করে (structure চেঞ্জ না করে)
-function processElement(el: Element): void {
+function mergeStyles(...styles: Array<string | null | undefined>): string {
+    return stringifyStyle(
+        styles.reduce<Record<string, string>>((acc, style) => {
+            if (!style) return acc;
+            return { ...acc, ...parseStyle(style) };
+        }, {}),
+    );
+}
+
+function getElementStyle(el: Element): string {
     const tag = el.tagName.toLowerCase();
+    const className = el.getAttribute("class") ?? "";
     const base = TAG_STYLES[tag] ?? "";
 
-    // Special case 1: <code> inside <pre> এ আলাদা style
     if (tag === "code" && el.closest("pre")) {
-        const codeInPreStyle =
-            "background:none;padding:0;border-radius:0;font-family:'JetBrains Mono','Geist Mono','SF Mono',Menlo,monospace";
-        const existing = el.getAttribute("style") ?? "";
-        el.setAttribute("style", mergeStyles(codeInPreStyle, existing));
-    }
-    // Special case 2: <mark> এ data-color attribute থাকলে সেই color use করা
-    else if (tag === "mark") {
-        const colorAttr = el.getAttribute("data-color");
-        const bgColor = colorAttr
-            ? (HIGHLIGHT_COLORS[colorAttr] ?? HIGHLIGHT_COLORS.yellow)
-            : HIGHLIGHT_COLORS.yellow;
-        const markStyle = `background:${bgColor};padding:0 2px;border-radius:2px;color:inherit`;
-        const existing = el.getAttribute("style") ?? "";
-        el.setAttribute("style", mergeStyles(markStyle, existing));
-    }
-    // Special case 3: Task list items
-    else if (tag === "li" && el.getAttribute("data-type") === "taskItem") {
-        const isChecked = el.getAttribute("data-checked") === "true";
-        let taskStyle =
-            "display:flex;gap:8px;align-items:flex-start;margin:0.25em 0;list-style:none;font-family:'Newsreader','Iowan Old Style',Georgia,serif";
-        if (isChecked) {
-            taskStyle += ";text-decoration:line-through;color:#999";
-        }
-        const existing = el.getAttribute("style") ?? "";
-        el.setAttribute("style", mergeStyles(taskStyle, existing));
-    }
-    // Task list wrapper
-    else if (tag === "ul" && el.getAttribute("data-type") === "taskList") {
-        const taskListStyle = "list-style:none;padding-left:0;margin:0.5em 0";
-        const existing = el.getAttribute("style") ?? "";
-        el.setAttribute("style", mergeStyles(taskListStyle, existing));
-    }
-    // General case: সব ট্যাগে base style apply করা
-    else if (base) {
-        const existing = el.getAttribute("style") ?? "";
-        el.setAttribute("style", mergeStyles(base, existing));
+        return "background:transparent;padding:0;border-radius:0;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:inherit;color:inherit";
     }
 
-    // সব children recursively process করা
-    for (const child of el.children) {
-        processElement(child);
+    if (tag === "mark") {
+        const color = el.getAttribute("data-color");
+        const bg = color ? HIGHLIGHT_COLORS[color] ?? color : HIGHLIGHT_COLORS.yellow;
+        return `background:${bg};padding:0 2px;border-radius:2px;color:inherit`;
+    }
+
+    if (tag === "ul" && el.getAttribute("data-type") === "taskList") {
+        return "margin:0.75em 0;padding-left:0;list-style:none";
+    }
+
+    if (tag === "li" && el.getAttribute("data-type") === "taskItem") {
+        const checked = el.getAttribute("data-checked") === "true";
+        return mergeStyles(
+            "display:flex;gap:8px;align-items:flex-start;margin:0.35em 0;padding-left:0;list-style:none;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.55;color:#1f2933",
+            checked ? "color:#64748b;text-decoration:line-through" : "",
+        );
+    }
+
+    if (tag === "input" && (el as HTMLInputElement).type === "checkbox") {
+        return "width:14px;height:14px;margin:0.25em 0 0 0;flex:0 0 auto";
+    }
+
+    if (tag === "div" && className.includes("rte-iframe-wrap")) {
+        const ratio = el.getAttribute("data-ratio") ?? "16:9";
+        const align = el.getAttribute("data-align") ?? "center";
+        const ratioStyle = ratio === "auto" ? "min-height:240px" : toAspectRatioStyle(ratio);
+        return mergeStyles(
+            "box-sizing:border-box;display:block;width:100%;max-width:100%;margin:1em auto;overflow:hidden;background:#f8fafc",
+            ratioStyle,
+            getFloatStyle(align, "16px"),
+        );
+    }
+
+    if (tag === "table") {
+        return mergeStyles(base, getTableStyle(el));
+    }
+
+    if (tag === "tr" && el.getAttribute("data-row-height")) {
+        return mergeStyles(base, `height:${el.getAttribute("data-row-height")}`);
+    }
+
+    if (tag === "td" || tag === "th") {
+        const colWidth = el.getAttribute("colwidth")?.split(",")[0];
+        const colWidthPx = colWidth && Number.isFinite(parseInt(colWidth, 10)) ? `${parseInt(colWidth, 10)}px` : "";
+        return mergeStyles(
+            base,
+            colWidthPx ? `width:${colWidthPx}` : "",
+            el.parentElement?.getAttribute("data-row-height")
+                ? "height:inherit;padding-top:0;padding-bottom:0;overflow:hidden"
+                : "",
+        );
+    }
+
+    if (tag === "img") {
+        return mergeStyles(base, getImageStyle(el));
+    }
+
+    return base;
+}
+
+function toAspectRatioStyle(ratio: string): string {
+    const match = ratio.match(/^\s*(\d+)\s*:\s*(\d+)\s*$/);
+    if (!match) return "";
+    return `aspect-ratio:${match[1]} / ${match[2]}`;
+}
+
+function getFloatStyle(align: string | null, gap = "18px"): string {
+    if (align === "left") return `float:left;margin:0.35em ${gap} 0.9em 0`;
+    if (align === "right") return `float:right;margin:0.35em 0 0.9em ${gap}`;
+    if (align === "center") return "float:none;margin-left:auto;margin-right:auto";
+    return "";
+}
+
+function getTableStyle(el: Element): string {
+    const align = el.getAttribute("data-table-align");
+    const width = el.getAttribute("data-table-width") || (el as HTMLElement).style.width;
+    return mergeStyles(
+        width ? `width:${width}` : "",
+        align === "full" ? "width:100%;clear:both" : "",
+        getFloatStyle(align, "20px"),
+        align === "left" || align === "right" ? "max-width:72%" : "",
+    );
+}
+
+function getImageStyle(el: Element): string {
+    const align = el.getAttribute("data-align");
+    const width = el.getAttribute("width");
+    const height = el.getAttribute("height");
+    return mergeStyles(
+        width ? `width:${Number.isNaN(Number(width)) ? width : `${width}px`}` : "",
+        height ? `height:${Number.isNaN(Number(height)) ? height : `${height}px`}` : "",
+        getFloatStyle(align, "16px"),
+    );
+}
+
+function cleanAttributes(el: Element): void {
+    const attributes = Array.from(el.attributes);
+    for (const attr of attributes) {
+        const name = attr.name.toLowerCase();
+        if (name === "style") continue;
+        if (name === "class" || name === "contenteditable" || name === "draggable" || name === "spellcheck") {
+            el.removeAttribute(attr.name);
+            continue;
+        }
+        if (name === "colwidth") {
+            el.removeAttribute(attr.name);
+            continue;
+        }
+        if (name.startsWith("data-")) {
+            el.removeAttribute(attr.name);
+        }
     }
 }
 
-/**
- * এডিটরের HTML নিয়ে inline styles যোগ করে দেয়।
- *
- * @param html - editor.getHTML() থেকে আসা raw HTML
- * @returns সম্পূর্ণ inline-styled HTML (কোনো CSS import লাগবে না)
- */
+function processElement(el: Element): void {
+    const generatedStyle = getElementStyle(el);
+    const existingStyle = el.getAttribute("style") ?? "";
+    const nextStyle = mergeStyles(generatedStyle, existingStyle);
+    if (nextStyle) el.setAttribute("style", nextStyle);
+
+    if (el.tagName.toLowerCase() === "a") {
+        const href = el.getAttribute("href");
+        if (href && /^https?:\/\//i.test(href)) {
+            el.setAttribute("rel", "noopener noreferrer");
+            if (!el.getAttribute("target")) el.setAttribute("target", "_blank");
+        }
+    }
+
+    for (const child of Array.from(el.children)) {
+        processElement(child);
+    }
+
+    cleanAttributes(el);
+}
+
 export function getInlinedHTML(html: string): string {
-    if (!html) return "";
+    if (!html.trim()) return "";
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
@@ -163,5 +233,5 @@ export function getInlinedHTML(html: string): string {
         processElement(child);
     }
 
-    return doc.body.innerHTML;
+    return `<div style="${EXPORT_ROOT_STYLE}">${doc.body.innerHTML}</div>`;
 }

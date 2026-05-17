@@ -330,6 +330,26 @@
 .rte-content p {
     margin: 0 0 0.8em;
 }
+.rte-content ul:not([data-type="taskList"]),
+.rte-content ol {
+    margin: 0.75em 0 0.9em;
+    padding-left: 1.5em;
+}
+.rte-content ul:not([data-type="taskList"]) {
+    list-style: disc;
+}
+.rte-content ol {
+    list-style: decimal;
+}
+.rte-content ul:not([data-type="taskList"]) li,
+.rte-content ol li {
+    margin: 0.25em 0;
+    padding-left: 0.15em;
+}
+.rte-content ul:not([data-type="taskList"]) li > p,
+.rte-content ol li > p {
+    margin: 0.15em 0;
+}
 .rte-content a {
     color: inherit;
     text-decoration: underline;
