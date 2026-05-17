@@ -30,9 +30,13 @@
   ],
   "license": "MIT",
   "author": "Syed Amir Ali",
+  "homepage": "https://syedamirali.github.io/inkwell-editor/",
   "repository": {
     "type": "git",
     "url": "https://github.com/SyedAmirAli/inkwell-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SyedAmirAli/inkwell-editor/issues"
   },
   "scripts": {
     "dev": "vite build --watch",
