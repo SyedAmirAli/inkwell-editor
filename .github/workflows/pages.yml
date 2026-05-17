@@ -32,7 +32,7 @@ jobs:
 
       - name: Build demo
         env:
-          VITE_BASE_PATH: /reach-text-editor/
+          VITE_BASE_PATH: /inkwell-editor/
         run: yarn build:demo
 
       - name: Upload Pages artifact

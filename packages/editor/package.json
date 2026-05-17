@@ -32,7 +32,7 @@
   "author": "Syed Amir Ali",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SyedAmirAli/reach-text-editor.git"
+    "url": "https://github.com/SyedAmirAli/inkwell-editor.git"
   },
   "scripts": {
     "dev": "vite build --watch",

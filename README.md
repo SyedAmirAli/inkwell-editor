@@ -7,7 +7,7 @@ A premium, monochrome **rich text editor for React** — Tiptap-powered, with a 
 [![bundle size](https://img.shields.io/bundlephobia/minzip/@syedamirali/inkwell-editor)](https://bundlephobia.com/package/@syedamirali/inkwell-editor)
 [![license MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-**Live demo →** https://syedamirali.github.io/reach-text-editor/
+**Live demo →** https://syedamirali.github.io/inkwell-editor/
 
 ---
 
@@ -365,7 +365,7 @@ The demo's vite config aliases `@syedamirali/inkwell-editor` to `packages/editor
 
 ## Contributing
 
-Issues and PRs welcome at https://github.com/SyedAmirAli/reach-text-editor.
+Issues and PRs welcome at https://github.com/SyedAmirAli/inkwell-editor.
 
 Before opening a PR:
 1. `yarn install`
