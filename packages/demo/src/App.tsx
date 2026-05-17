@@ -48,7 +48,7 @@ export default function App() {
             defaultFonts={FONTS}
             onChange={(html) => {
                 // eslint-disable-next-line no-console
-                if (import.meta.env.DEV) console.debug("change", html.length, "bytes");
+                if ((import.meta as any).env?.DEV) console.debug("change", html.length, "bytes");
             }}
         />
     );

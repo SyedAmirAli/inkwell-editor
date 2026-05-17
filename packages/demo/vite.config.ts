@@ -5,6 +5,11 @@ import react from "@vitejs/plugin-react";
 const editorRoot = resolve(__dirname, "../editor");
 
 export default defineConfig({
+    // When deployed to GitHub Pages as a project page, assets must be
+    // served from /reach-text-editor/. The Pages workflow sets
+    // VITE_BASE_PATH=/reach-text-editor/ before building; local dev keeps
+    // the default root base.
+    base: process.env.VITE_BASE_PATH || "/",
     plugins: [react()],
     resolve: {
         alias: [
