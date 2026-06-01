@@ -82,7 +82,7 @@
     background: transparent;
     color: var(--fg);
     font: var(--w-regular) var(--text-13) / 1 var(--font-ui);
-    padding: 5px 10px;
+    padding: 2.5px 10px !important;
     border-radius: var(--r-2);
     cursor: pointer;
     height: 24px;
@@ -993,7 +993,7 @@
 /* Buttons (used by compact footer, etc.) */
 .rte-btn {
     font: var(--w-medium) var(--text-13) / 1 var(--font-ui);
-    padding: 7px 12px;
+    padding: 7px 12px !important;
     border-radius: var(--r-2);
     border: 1px solid var(--border-strong);
     background: var(--surface);
@@ -1008,35 +1008,35 @@
     background: var(--hover);
 }
 .rte-btn-primary {
-    background: var(--ink-12);
-    color: var(--ink-0);
+    background: var(--ink-12) !important;
+    color: var(--ink-0) !important;
     border-color: transparent;
 }
 .rte-btn-primary:hover {
-    background: var(--ink-11);
+    background: var(--ink-11) !important;
 }
 .rte-btn-ghost {
     background: transparent;
     border-color: transparent;
 }
 .rte-btn-ghost:hover {
-    background: var(--hover);
+    background: var(--hover) !important;
 }
 .rte-btn-success {
-    background: var(--color-green-100);
-    color: var(--color-green-500);
+    background: var(--color-green-100) !important;
+    color: var(--color-green-500) !important;
     border-color: transparent;
 }
 .rte-btn-success:hover {
-    background: var(--color-green-200);
+    background: var(--color-green-200) !important;
 }
 .rte-btn-danger {
-    background: var(--color-red-100);
-    color: var(--color-red-500);
+    background: var(--color-red-100) !important;
+    color: var(--color-red-500) !important;
     border-color: transparent;
 }
 .rte-btn-danger:hover {
-    background: var(--color-red-200);
+    background: var(--color-red-200) !important;
 }
 
 /* App-level chrome */

@@ -1,11 +1,4 @@
-import {
-    forwardRef,
-    useCallback,
-    useEffect,
-    useImperativeHandle,
-    useRef,
-    useState,
-} from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import type { Editor as TiptapEditor } from "@tiptap/react";
 
 import { Menubar } from "./components/Menubar";
@@ -43,11 +36,7 @@ export interface EditorProps {
 const applyTheme = (theme: Theme, custom: { fg: string; bg: string }) => {
     const root = document.documentElement;
     const resolved =
-        theme === "system"
-            ? window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light"
-            : theme;
+        theme === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : theme;
     root.dataset.theme = resolved;
     if (theme === "custom") {
         root.style.setProperty("--custom-fg", custom.fg);
@@ -65,11 +54,11 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         defaultTheme = "light",
         defaultFonts,
         documentName = "Untitled document",
-        aiPanelOpen = true,
+        aiPanelOpen = false,
         onReady,
         onChange,
     },
-    ref,
+    ref
 ) {
     const [mode, setMode] = useState<Mode>(initialMode);
     const [theme, setTheme] = useState<Theme>(defaultTheme);
@@ -96,7 +85,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
             },
             getEditor: () => editorRef.current,
         }),
-        [],
+        []
     );
 
     useEffect(() => {
@@ -135,7 +124,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
             editorRef.current = instance;
             onReady?.(instance);
         },
-        [onReady],
+        [onReady]
     );
 
     const openCommentPanel = useCallback(() => {
@@ -159,7 +148,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
                 ...curr,
             ]);
         },
-        [commentQuote],
+        [commentQuote]
     );
 
     return (
@@ -177,9 +166,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
                                 <input
                                     type="color"
                                     value={custom.fg}
-                                    onChange={(e) =>
-                                        setCustom((c) => ({ ...c, fg: e.target.value }))
-                                    }
+                                    onChange={(e) => setCustom((c) => ({ ...c, fg: e.target.value }))}
                                 />
                             </label>
                             <label>
@@ -187,15 +174,10 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
                                 <input
                                     type="color"
                                     value={custom.bg}
-                                    onChange={(e) =>
-                                        setCustom((c) => ({ ...c, bg: e.target.value }))
-                                    }
+                                    onChange={(e) => setCustom((c) => ({ ...c, bg: e.target.value }))}
                                 />
                             </label>
-                            <button
-                                className="rte-btn rte-btn-ghost"
-                                onClick={() => setTheme("light")}
-                            >
+                            <button className="rte-btn rte-btn-ghost" onClick={() => setTheme("light")}>
                                 Done
                             </button>
                         </div>
@@ -244,11 +226,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
                             />
                         )}
                         {mode !== "compact" && (
-                            <AIPanel
-                                open={aiOpen}
-                                onClose={() => setAiOpen(false)}
-                                editor={editor}
-                            />
+                            <AIPanel open={aiOpen} onClose={() => setAiOpen(false)} editor={editor} />
                         )}
                         {mode !== "compact" && (
                             <CommentPanel

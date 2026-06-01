@@ -27,10 +27,7 @@ export { Icons } from "./components/Icons";
 // Tiptap extensions shipped with the editor — re-export so consumers can
 // compose their own Tiptap setup if they bypass <Editor>.
 export { TableEnhanced, TableRowEnhanced } from "./extensions/TableEnhanced";
-export {
-    TableCellEnhanced,
-    TableHeaderEnhanced,
-} from "./extensions/TableCellEnhanced";
+export { TableCellEnhanced, TableHeaderEnhanced } from "./extensions/TableCellEnhanced";
 export { ResizableImage } from "./extensions/ResizableImage";
 export { IframeEmbed } from "./extensions/IframeEmbed";
 

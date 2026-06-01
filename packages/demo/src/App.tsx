@@ -50,6 +50,7 @@ export default function App() {
                 // eslint-disable-next-line no-console
                 if ((import.meta as any).env?.DEV) console.debug("change", html.length, "bytes");
             }}
+            aiPanelOpen={true}
         />
     );
 }
