@@ -19,7 +19,9 @@
 }
 .rte-shell[data-mode="fullscreen"] {
     position: fixed;
-    inset: 0;
+    /* Offset the fullscreen shell from the top so it sits below a host's fixed
+       header instead of covering it. Override with `--rte-shell-top`. */
+    inset: var(--rte-shell-top, 0) 0 0 0;
     border-radius: 0;
     z-index: 60;
     border: 0;
@@ -352,17 +354,19 @@
     min-width: 0;
     display: flex;
     justify-content: center;
-    padding: var(--s-8) var(--s-6);
+    /* Gutter around the document "page". Override via the Editor `style` prop
+       with `--rte-canvas-padding` to tighten/remove it when embedded. */
+    padding: var(--rte-canvas-padding, var(--s-8) var(--s-6));
     background: var(--surface);
 }
 .rte-canvas[data-mode="document"] {
-    padding: var(--s-10) var(--s-8);
+    padding: var(--rte-canvas-padding, var(--s-10) var(--s-8));
 }
 .rte-canvas[data-mode="fullscreen"] {
-    padding: var(--s-12) var(--s-16);
+    padding: var(--rte-canvas-padding, var(--s-12) var(--s-16));
 }
 .rte-canvas[data-mode="compact"] {
-    padding: var(--s-3);
+    padding: var(--rte-canvas-padding, var(--s-3));
     justify-content: stretch;
     background: transparent;
 }
@@ -373,13 +377,15 @@
     background: var(--canvas);
     border-radius: var(--r-4);
     box-shadow: var(--shadow-page);
-    padding: 64px 80px 96px;
+    /* Inner padding of the document "page" itself. Override via the Editor
+       `style` prop with `--rte-page-inset` (e.g. for a denser embed). */
+    padding: var(--rte-page-inset, 64px 80px 96px);
     position: relative;
 }
 .rte-canvas[data-mode="fullscreen"] .rte-canvas-inner {
     max-width: 760px;
     box-shadow: none;
-    padding: 24px 0;
+    padding: var(--rte-page-inset, 24px 0);
     background: transparent;
 }
 
@@ -1041,16 +1047,23 @@
 
 /* App-level chrome */
 .rte-app-page {
-    min-height: 100vh;
-    background: var(--surface);
-    padding: var(--s-8);
+    /* Sizing hooks — override via the Editor `style` prop to embed the editor
+       inside an existing layout instead of letting it own the viewport. */
+    --rte-shell-top: 0px; /* fullscreen top offset; override to clear a fixed host header */
+    min-height: var(--rte-page-min-height, 100vh);
+    background: var(--rte-page-bg, var(--surface));
+    padding: var(--rte-page-padding, var(--s-8));
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Anchor the absolutely-positioned mode rail to the editor, not the window. */
+    position: relative;
 }
 .rte-stage {
-    width: min(1280px, 100%);
-    height: min(820px, calc(100vh - 64px));
+    width: var(--rte-width, min(1280px, 100%));
+    height: var(--rte-height, min(820px, calc(100vh - 64px)));
+    max-height: 100%;
+    position: relative;
 }
 .rte-stage[data-mode="compact"] {
     width: 580px;
@@ -1059,9 +1072,10 @@
     margin-top: 80px;
 }
 
-/* Mode rail at the right edge of the page */
+/* Mode rail pinned to the right edge of the editor (not the viewport), so it
+   travels with the editor when embedded and scrolled inside a host page. */
 .rte-mode-rail {
-    position: fixed;
+    position: absolute;
     right: 14px;
     top: 50%;
     transform: translateY(-50%);
@@ -1074,6 +1088,11 @@
     padding: 4px;
     box-shadow: var(--shadow-1);
     z-index: 70;
+}
+/* In the built-in fullscreen mode the shell covers the viewport, so the rail
+   must pin to the viewport rather than the (now off-screen) editor box. */
+.rte-stage[data-mode="fullscreen"] .rte-mode-rail {
+    position: fixed;
 }
 .rte-mode-rail button {
     width: 32px;

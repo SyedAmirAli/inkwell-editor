@@ -10,7 +10,7 @@ import "./styles/editor.css";
 // Top-level component + types.
 export { Editor } from "./Editor";
 export type { EditorProps } from "./Editor";
-export type { EditorHandle, FontDef, Mode, Theme } from "./types";
+export type { EditorExtraStyleProps, EditorHandle, EditorStyleProperties, FontDef, Mode, Theme } from "./types";
 
 // Low-level building blocks for consumers who want to compose their own shell.
 export { EditorCanvas } from "./components/EditorCanvas";

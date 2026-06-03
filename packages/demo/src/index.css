@@ -1,0 +1,588 @@
+/* Demo shell styles — glassy fixed navbar for the Inkwell editor demo.
+   These styles are scoped to the demo chrome (.demo-*) and intentionally
+   independent from the editor package styles. */
+
+:root {
+    --demo-fg: #1a1a1a;
+    --demo-fg-muted: #6b6b6b;
+    --demo-bg: #f7f7f7;
+    --demo-glass: rgba(255, 255, 255, 0.6);
+    --demo-glass-border: rgba(0, 0, 0, 0.08);
+    --demo-hover: rgba(0, 0, 0, 0.05);
+    --demo-active-bg: #1a1a1a;
+    --demo-active-fg: #ffffff;
+    --demo-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="dark"] {
+    --demo-fg: #f2f2f2;
+    --demo-fg-muted: #9a9a9a;
+    --demo-bg: #0e0e0e;
+    --demo-glass: rgba(22, 22, 22, 0.55);
+    --demo-glass-border: rgba(255, 255, 255, 0.1);
+    --demo-hover: rgba(255, 255, 255, 0.08);
+    --demo-active-bg: #f2f2f2;
+    --demo-active-fg: #0e0e0e;
+    --demo-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    margin: 0;
+    background: var(--demo-bg);
+    color: var(--demo-fg);
+}
+
+/* Fixed, transparent, glassy bar pinned to the top. */
+.demo-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--demo-glass);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid var(--demo-glass-border);
+    box-shadow: var(--demo-shadow);
+}
+
+/* Centered container that keeps the nav contents middle-aligned. */
+.demo-navbar__container {
+    max-width: 1100px;
+    margin: 0 auto;
+    height: 60px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.demo-navbar__brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 650;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--demo-fg);
+    user-select: none;
+}
+
+.demo-navbar__tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Tab buttons: icon + title, with hover and active effects. */
+.demo-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--demo-fg-muted);
+    font-size: 13px;
+    font-weight: 550;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+}
+
+.demo-tab svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.demo-tab:hover {
+    background: var(--demo-hover);
+    color: var(--demo-fg);
+}
+
+.demo-tab:active {
+    transform: scale(0.97);
+}
+
+/* Active = monochrome reversal (black-on-white / white-on-black). */
+.demo-tab.is-active {
+    background: var(--demo-active-bg);
+    color: var(--demo-active-fg);
+}
+
+/* Theme toggle button. */
+.demo-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--demo-glass-border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--demo-fg);
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.12s ease;
+}
+
+.demo-theme-toggle:hover {
+    background: var(--demo-hover);
+}
+
+.demo-theme-toggle:active {
+    transform: scale(0.92);
+}
+
+.demo-theme-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Push page content below the fixed navbar. */
+.demo-content {
+    padding-top: 60px;
+}
+
+/* --- Realistic article form ------------------------------------------- */
+
+.demo-form {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.demo-form__head {
+    margin-bottom: 24px;
+}
+
+.demo-form__eyebrow {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--demo-fg-muted);
+}
+
+.demo-form__title {
+    margin: 0 0 6px;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--demo-fg);
+}
+
+.demo-form__subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: var(--demo-fg-muted);
+}
+
+/* Saved confirmation banner. */
+.demo-alert {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    border: 1px solid var(--demo-glass-border);
+    border-radius: 12px;
+    background: var(--demo-hover);
+    color: var(--demo-fg);
+    font-size: 13px;
+}
+
+.demo-alert span {
+    color: var(--demo-fg-muted);
+    text-transform: capitalize;
+}
+
+/* The card holds a responsive two-column field grid. */
+.demo-form__card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    padding: 28px;
+    border: 1px solid var(--demo-glass-border);
+    border-radius: 18px;
+    background: var(--demo-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--demo-shadow);
+}
+
+.demo-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.demo-field--full {
+    grid-column: 1 / -1;
+}
+
+.demo-field > label,
+.demo-radios + label,
+.demo-field--full > label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--demo-fg);
+}
+
+.demo-field input[type="text"],
+.demo-field input[type="email"],
+.demo-field input[type="url"],
+.demo-field input[type="date"],
+.demo-field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid var(--demo-glass-border);
+    border-radius: 10px;
+    background: var(--demo-bg);
+    color: var(--demo-fg);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.demo-field input::placeholder {
+    color: var(--demo-fg-muted);
+    opacity: 0.7;
+}
+
+.demo-field input:focus,
+.demo-field select:focus {
+    outline: none;
+    border-color: var(--demo-fg);
+    box-shadow: 0 0 0 3px var(--demo-hover);
+}
+
+/* Radio group for visibility. */
+.demo-radios {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.demo-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1px solid var(--demo-glass-border);
+    border-radius: 999px;
+    font-size: 13px;
+    text-transform: capitalize;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.demo-radio:hover {
+    background: var(--demo-hover);
+}
+
+.demo-radio input {
+    accent-color: var(--demo-fg);
+}
+
+/* Wrapper that frames the embedded Inkwell editor. */
+.demo-editor-wrap {
+    border: 1px solid var(--demo-glass-border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--demo-bg);
+}
+
+.demo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--demo-fg);
+    cursor: pointer;
+}
+
+.demo-checkbox input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--demo-fg);
+}
+
+.demo-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.demo-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.18s ease, transform 0.12s ease, border-color 0.18s ease;
+}
+
+.demo-btn:active {
+    transform: scale(0.97);
+}
+
+.demo-btn--ghost {
+    background: transparent;
+    border-color: var(--demo-glass-border);
+    color: var(--demo-fg);
+}
+
+.demo-btn--ghost:hover {
+    background: var(--demo-hover);
+}
+
+.demo-btn--primary {
+    background: var(--demo-active-bg);
+    color: var(--demo-active-fg);
+}
+
+.demo-btn--primary:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+    .demo-form__card {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Realistic app shell (sidebar + doc header + editor) ------------ */
+
+.demo-realistic {
+    display: flex;
+    min-height: calc(100vh - 60px);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.demo-realistic__sidebar {
+    flex: 0 0 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 14px;
+    border-right: 1px solid var(--demo-glass-border);
+    background: var(--demo-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.demo-realistic__workspace {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px;
+}
+
+.demo-realistic__workspace-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--demo-active-bg);
+    flex-shrink: 0;
+}
+
+.demo-realistic__workspace-name {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--demo-fg);
+}
+
+.demo-realistic__workspace-plan {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--demo-fg-muted);
+}
+
+.demo-realistic__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.demo-realistic__nav-item {
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--demo-fg-muted);
+    font-size: 13px;
+    font-weight: 550;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.demo-realistic__nav-item:hover {
+    background: var(--demo-hover);
+    color: var(--demo-fg);
+}
+
+.demo-realistic__nav-item.is-active {
+    background: var(--demo-active-bg);
+    color: var(--demo-active-fg);
+}
+
+.demo-realistic__section-label {
+    margin: 0 0 8px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--demo-fg-muted);
+}
+
+.demo-realistic__recent ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.demo-realistic__doc-link {
+    display: block;
+    width: 100%;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--demo-fg-muted);
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.demo-realistic__doc-link:hover {
+    background: var(--demo-hover);
+    color: var(--demo-fg);
+}
+
+.demo-realistic__doc-link.is-current {
+    color: var(--demo-fg);
+    font-weight: 600;
+}
+
+.demo-realistic__main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.demo-realistic__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 52px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--demo-glass-border);
+    background: var(--demo-bg);
+}
+
+.demo-realistic__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--demo-fg-muted);
+    min-width: 0;
+}
+
+.demo-realistic__breadcrumb span:last-child {
+    color: var(--demo-fg);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.demo-realistic__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.demo-realistic__status {
+    font-size: 12px;
+    color: var(--demo-fg-muted);
+    margin-right: 4px;
+}
+
+.demo-realistic__action {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.demo-realistic__action--ghost {
+    background: transparent;
+    border-color: var(--demo-glass-border);
+    color: var(--demo-fg);
+}
+
+.demo-realistic__action--ghost:hover {
+    background: var(--demo-hover);
+}
+
+.demo-realistic__action--ghost.is-on,
+span.demo-realistic__action.is-on {
+    background: var(--demo-active-bg);
+    color: var(--demo-active-fg);
+    border-color: var(--demo-active-bg);
+    cursor: default;
+}
+
+.demo-realistic__action--primary {
+    background: var(--demo-active-bg);
+    color: var(--demo-active-fg);
+}
+
+.demo-realistic__action--primary:hover {
+    opacity: 0.9;
+}
+
+.demo-realistic__editor {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+@media (max-width: 900px) {
+    .demo-realistic {
+        flex-direction: column;
+    }
+
+    .demo-realistic__sidebar {
+        flex: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        border-right: none;
+        border-bottom: 1px solid var(--demo-glass-border);
+    }
+
+    .demo-realistic__recent {
+        display: none;
+    }
+}

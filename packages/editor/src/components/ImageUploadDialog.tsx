@@ -120,7 +120,7 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
 
     return createPortal(
         <div
-            className="rte-img-overlay"
+            className={`rte-img-overlay ${step === "edit" ? "rte-img-overlay--edit" : ""}`}
             onClick={(e) => {
                 if (e.target === e.currentTarget && step !== "edit") onClose();
             }}

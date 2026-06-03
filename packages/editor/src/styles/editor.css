@@ -271,7 +271,9 @@
     justify-content: center;
     border-style: dashed;
 }
-.rte-color-swatch--clear:hover { color: var(--fg); }
+.rte-color-swatch--clear:hover {
+    color: var(--fg);
+}
 
 /* ── Color panel (text color + highlight dropdowns) ───────────────── */
 .rte-color-panel {
@@ -303,15 +305,16 @@
     flex-shrink: 0;
     border: 1.5px solid var(--border-strong);
     /* Conic-gradient rainbow ring as the visual cue for the picker */
-    background:
-        conic-gradient(from 0deg,
-            #f44 0deg,
-            #fa3 60deg,
-            #fd3 120deg,
-            #4d4 180deg,
-            #4ac 240deg,
-            #a3f 300deg,
-            #f44 360deg);
+    background: conic-gradient(
+        from 0deg,
+        #f44 0deg,
+        #fa3 60deg,
+        #fd3 120deg,
+        #4d4 180deg,
+        #4ac 240deg,
+        #a3f 300deg,
+        #f44 360deg
+    );
 }
 .rte-color-picker-trigger input[type="color"] {
     position: absolute;
@@ -343,7 +346,9 @@
     outline: none;
     text-transform: lowercase;
 }
-.rte-color-hex:focus { border-color: var(--ring); }
+.rte-color-hex:focus {
+    border-color: var(--ring);
+}
 .rte-color-hex[data-error] {
     border-color: oklch(60% 0.2 25);
     background: color-mix(in oklch, oklch(60% 0.2 25) 8%, var(--canvas));
@@ -357,7 +362,9 @@
     cursor: pointer;
     font: 600 11px/1 var(--font-ui);
 }
-.rte-color-apply:hover { opacity: 0.9; }
+.rte-color-apply:hover {
+    opacity: 0.9;
+}
 
 .rte-dropdown {
     font-family: var(--font-ui);
@@ -723,7 +730,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     left: 0;
     pointer-events: none;
 }
-.rte-table-controls > * { pointer-events: auto; }
+.rte-table-controls > * {
+    pointer-events: auto;
+}
 
 /* Floating toolbar centered above the table */
 .rte-table-toolbar {
@@ -754,16 +763,23 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
     padding: 0;
 }
-.rte-tt-btn:hover { background: var(--surface-2, var(--canvas)); color: var(--fg-strong); }
+.rte-tt-btn:hover {
+    background: var(--surface-2, var(--canvas));
+    color: var(--fg-strong);
+}
 .rte-tt-btn[data-on] {
     background: var(--ring);
     color: var(--ink-0);
 }
-.rte-tt-btn.rte-tt-danger:hover { color: oklch(60% 0.2 25); }
+.rte-tt-btn.rte-tt-danger:hover {
+    color: oklch(60% 0.2 25);
+}
 .rte-tt-btn.rte-tt-danger-strong {
     color: oklch(55% 0.2 25);
 }
-.rte-tt-btn.rte-tt-danger-strong:hover { background: color-mix(in oklch, oklch(60% 0.2 25) 12%, transparent); }
+.rte-tt-btn.rte-tt-danger-strong:hover {
+    background: color-mix(in oklch, oklch(60% 0.2 25) 12%, transparent);
+}
 .rte-tt-sep {
     width: 1px;
     height: 16px;
@@ -792,7 +808,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     color: var(--fg);
     background: var(--surface-2, var(--canvas));
 }
-.rte-table-drag-handle:active { cursor: grabbing; }
+.rte-table-drag-handle:active {
+    cursor: grabbing;
+}
 
 .rte-table-resize-handle {
     position: absolute;
@@ -955,20 +973,43 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
 .rte-table-col-handle:hover .rte-table-rc-del {
     opacity: 1;
 }
-.rte-table-rc-plus:hover { background: var(--ring); color: var(--ink-0); border-color: var(--ring); transform: scale(1.1); }
-.rte-table-rc-del:hover { background: oklch(55% 0.2 25); color: #fff; border-color: oklch(55% 0.2 25); }
+.rte-table-rc-plus:hover {
+    background: var(--ring);
+    color: var(--ink-0);
+    border-color: var(--ring);
+    transform: scale(1.1);
+}
+.rte-table-rc-del:hover {
+    background: oklch(55% 0.2 25);
+    color: #fff;
+    border-color: oklch(55% 0.2 25);
+}
 
 /* Row handle layout: label centered, + above/below row, 🗑 to the right */
-.rte-table-row-handle .rte-table-rc-plus--above { top: -10px; left: 50%; transform: translateX(-50%); }
-.rte-table-row-handle .rte-table-rc-plus--below { bottom: -10px; left: 50%; transform: translateX(-50%); }
-.rte-table-row-handle .rte-table-rc-plus--above:hover { transform: translateX(-50%) scale(1.1); }
-.rte-table-row-handle .rte-table-rc-plus--below:hover { transform: translateX(-50%) scale(1.1); }
+.rte-table-row-handle .rte-table-rc-plus--above {
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.rte-table-row-handle .rte-table-rc-plus--below {
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.rte-table-row-handle .rte-table-rc-plus--above:hover {
+    transform: translateX(-50%) scale(1.1);
+}
+.rte-table-row-handle .rte-table-rc-plus--below:hover {
+    transform: translateX(-50%) scale(1.1);
+}
 .rte-table-row-handle .rte-table-rc-del {
     right: -24px;
     top: 50%;
     transform: translateY(-50%);
 }
-.rte-table-row-handle .rte-table-rc-del:hover { transform: translateY(-50%) scale(1.1); }
+.rte-table-row-handle .rte-table-rc-del:hover {
+    transform: translateY(-50%) scale(1.1);
+}
 
 .rte-table-row-resize {
     position: absolute;
@@ -999,16 +1040,30 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
 }
 
 /* Column handle layout: label centered, + left/right of col, 🗑 below */
-.rte-table-col-handle .rte-table-rc-plus--left { left: -10px; top: 50%; transform: translateY(-50%); }
-.rte-table-col-handle .rte-table-rc-plus--right { right: -10px; top: 50%; transform: translateY(-50%); }
-.rte-table-col-handle .rte-table-rc-plus--left:hover { transform: translateY(-50%) scale(1.1); }
-.rte-table-col-handle .rte-table-rc-plus--right:hover { transform: translateY(-50%) scale(1.1); }
+.rte-table-col-handle .rte-table-rc-plus--left {
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.rte-table-col-handle .rte-table-rc-plus--right {
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.rte-table-col-handle .rte-table-rc-plus--left:hover {
+    transform: translateY(-50%) scale(1.1);
+}
+.rte-table-col-handle .rte-table-rc-plus--right:hover {
+    transform: translateY(-50%) scale(1.1);
+}
 .rte-table-col-handle .rte-table-rc-del {
     bottom: -24px;
     left: 50%;
     transform: translateX(-50%);
 }
-.rte-table-col-handle .rte-table-rc-del:hover { transform: translateX(-50%) scale(1.1); }
+.rte-table-col-handle .rte-table-rc-del:hover {
+    transform: translateX(-50%) scale(1.1);
+}
 
 /* ── Table grid picker (main toolbar popover) ─────────────────────── */
 .rte-table-picker {
@@ -1018,7 +1073,7 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-radius: var(--r-3);
     box-shadow: var(--shadow-2);
     padding: 10px;
-    z-index: 9999;
+    z-index: var(--z-index, 9999);
     animation: rte-pop 120ms cubic-bezier(0.2, 0, 0, 1);
 }
 .rte-table-picker-grid {
@@ -1038,7 +1093,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     padding: 0;
     transition: background 80ms ease, border-color 80ms ease, transform 80ms ease;
 }
-.rte-table-picker-cell:hover { transform: scale(1.05); }
+.rte-table-picker-cell:hover {
+    transform: scale(1.05);
+}
 .rte-table-picker-cell[data-on] {
     background: var(--ring);
     border-color: var(--ring);
@@ -1052,7 +1109,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     color: var(--fg);
     padding-bottom: 8px;
 }
-.rte-table-picker-label { font-weight: 600; }
+.rte-table-picker-label {
+    font-weight: 600;
+}
 .rte-table-picker-header-opt {
     display: inline-flex;
     align-items: center;
@@ -1062,7 +1121,10 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
     user-select: none;
 }
-.rte-table-picker-header-opt input { margin: 0; cursor: pointer; }
+.rte-table-picker-header-opt input {
+    margin: 0;
+    cursor: pointer;
+}
 .rte-table-picker-divider {
     height: 1px;
     background: var(--border);
@@ -1087,7 +1149,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     font: 500 11px/1 var(--font-ui);
     justify-content: center;
 }
-.rte-table-picker-quick:hover { background: var(--surface-2, var(--canvas)); }
+.rte-table-picker-quick:hover {
+    background: var(--surface-2, var(--canvas));
+}
 
 .rte-canvas[data-mode="fullscreen"][data-free] .rte-canvas-inner {
     max-width: none;
@@ -1110,10 +1174,23 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: grab;
     user-select: none;
 }
-.rte-content .rte-img-wrap:active { cursor: grabbing; }
-.rte-content .rte-img-wrap[data-align="left"]   { float: left; margin-right: 16px; }
-.rte-content .rte-img-wrap[data-align="right"]  { float: right; margin-left: 16px; }
-.rte-content .rte-img-wrap[data-align="center"] { margin-left: auto; margin-right: auto; float: none; clear: both; }
+.rte-content .rte-img-wrap:active {
+    cursor: grabbing;
+}
+.rte-content .rte-img-wrap[data-align="left"] {
+    float: left;
+    margin-right: 16px;
+}
+.rte-content .rte-img-wrap[data-align="right"] {
+    float: right;
+    margin-left: 16px;
+}
+.rte-content .rte-img-wrap[data-align="center"] {
+    margin-left: auto;
+    margin-right: auto;
+    float: none;
+    clear: both;
+}
 
 .rte-content .rte-img-el {
     display: block;
@@ -1124,7 +1201,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     pointer-events: auto;
 }
 
-.rte-content .rte-img-wrap:hover { box-shadow: 0 0 0 1px var(--border-strong); }
+.rte-content .rte-img-wrap:hover {
+    box-shadow: 0 0 0 1px var(--border-strong);
+}
 
 .rte-content .rte-img-wrap.rte-img-selected {
     outline-color: var(--ring);
@@ -1158,9 +1237,17 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     inset: -8px;
     /* Extend the clickable hit zone beyond the visible dot. */
 }
-.rte-img-handle:hover { transform: scale(1.2); }
-.rte-img-handle--n:hover, .rte-img-handle--s:hover { transform: translateX(-50%) scale(1.2); }
-.rte-img-handle--e:hover, .rte-img-handle--w:hover { transform: translateY(-50%) scale(1.2); }
+.rte-img-handle:hover {
+    transform: scale(1.2);
+}
+.rte-img-handle--n:hover,
+.rte-img-handle--s:hover {
+    transform: translateX(-50%) scale(1.2);
+}
+.rte-img-handle--e:hover,
+.rte-img-handle--w:hover {
+    transform: translateY(-50%) scale(1.2);
+}
 
 .rte-img-wrap:hover .rte-img-handle {
     opacity: 0.55;
@@ -1170,14 +1257,50 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     opacity: 1;
     pointer-events: auto;
 }
-.rte-img-handle--nw { top: -6px;  left: -6px;  cursor: nwse-resize; }
-.rte-img-handle--n  { top: -6px;  left: 50%;   transform: translateX(-50%); cursor: ns-resize; }
-.rte-img-handle--ne { top: -6px;  right: -6px; cursor: nesw-resize; }
-.rte-img-handle--e  { top: 50%;   right: -6px; transform: translateY(-50%); cursor: ew-resize; }
-.rte-img-handle--se { bottom: -6px; right: -6px; cursor: nwse-resize; }
-.rte-img-handle--s  { bottom: -6px; left: 50%;  transform: translateX(-50%); cursor: ns-resize; }
-.rte-img-handle--sw { bottom: -6px; left: -6px; cursor: nesw-resize; }
-.rte-img-handle--w  { top: 50%;   left: -6px;  transform: translateY(-50%); cursor: ew-resize; }
+.rte-img-handle--nw {
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+}
+.rte-img-handle--n {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+.rte-img-handle--ne {
+    top: -6px;
+    right: -6px;
+    cursor: nesw-resize;
+}
+.rte-img-handle--e {
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+.rte-img-handle--se {
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+}
+.rte-img-handle--s {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+.rte-img-handle--sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: nesw-resize;
+}
+.rte-img-handle--w {
+    top: 50%;
+    left: -6px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
 
 /* Alignment + delete toolbar */
 .rte-img-toolbar {
@@ -1216,9 +1339,16 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
     padding: 0;
 }
-.rte-img-tb-btn:hover { background: var(--surface-2, var(--canvas)); }
-.rte-img-tb-btn[data-on="true"] { background: var(--surface-2, var(--canvas)); color: var(--ring); }
-.rte-img-tb-danger:hover { color: oklch(60% 0.2 25); }
+.rte-img-tb-btn:hover {
+    background: var(--surface-2, var(--canvas));
+}
+.rte-img-tb-btn[data-on="true"] {
+    background: var(--surface-2, var(--canvas));
+    color: var(--ring);
+}
+.rte-img-tb-danger:hover {
+    color: oklch(60% 0.2 25);
+}
 .rte-img-tb-sep {
     width: 1px;
     height: 18px;
@@ -1241,14 +1371,36 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     outline: 2px solid transparent;
     outline-offset: 2px;
 }
-.rte-content .rte-iframe-wrap:active { cursor: grabbing; }
-.rte-content .rte-iframe-wrap[data-ratio="16:9"] { aspect-ratio: 16 / 9; }
-.rte-content .rte-iframe-wrap[data-ratio="4:3"]  { aspect-ratio: 4 / 3; }
-.rte-content .rte-iframe-wrap[data-ratio="1:1"]  { aspect-ratio: 1 / 1; }
-.rte-content .rte-iframe-wrap[data-ratio="auto"] { aspect-ratio: auto; min-height: 240px; }
-.rte-content .rte-iframe-wrap[data-align="left"]   { float: left;  margin-right: 16px; }
-.rte-content .rte-iframe-wrap[data-align="right"]  { float: right; margin-left: 16px; }
-.rte-content .rte-iframe-wrap[data-align="center"] { float: none; margin-left: auto; margin-right: auto; clear: both; }
+.rte-content .rte-iframe-wrap:active {
+    cursor: grabbing;
+}
+.rte-content .rte-iframe-wrap[data-ratio="16:9"] {
+    aspect-ratio: 16 / 9;
+}
+.rte-content .rte-iframe-wrap[data-ratio="4:3"] {
+    aspect-ratio: 4 / 3;
+}
+.rte-content .rte-iframe-wrap[data-ratio="1:1"] {
+    aspect-ratio: 1 / 1;
+}
+.rte-content .rte-iframe-wrap[data-ratio="auto"] {
+    aspect-ratio: auto;
+    min-height: 240px;
+}
+.rte-content .rte-iframe-wrap[data-align="left"] {
+    float: left;
+    margin-right: 16px;
+}
+.rte-content .rte-iframe-wrap[data-align="right"] {
+    float: right;
+    margin-left: 16px;
+}
+.rte-content .rte-iframe-wrap[data-align="center"] {
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    clear: both;
+}
 
 .rte-content .rte-iframe-wrap iframe {
     position: absolute;
@@ -1277,7 +1429,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
        initiate from anywhere on the embed. */
 }
 
-.rte-iframe-wrap:hover { box-shadow: 0 0 0 1px var(--border-strong), var(--shadow-1); }
+.rte-iframe-wrap:hover {
+    box-shadow: 0 0 0 1px var(--border-strong), var(--shadow-1);
+}
 .rte-iframe-wrap.rte-img-selected {
     outline-color: var(--ring);
     cursor: move;
@@ -1286,8 +1440,12 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     outline-color: var(--ring);
     cursor: grabbing;
 }
-.rte-iframe-wrap .rte-img-handle { z-index: 4; }
-.rte-iframe-wrap .rte-img-toolbar { z-index: 5; }
+.rte-iframe-wrap .rte-img-handle {
+    z-index: 4;
+}
+.rte-iframe-wrap .rte-img-toolbar {
+    z-index: 5;
+}
 
 /* Handle + toolbar visibility for iframe wrap (mirrors image rules) */
 .rte-iframe-wrap:hover .rte-img-handle {
@@ -1335,7 +1493,7 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     padding: 4px;
     display: none;
     flex-direction: column;
-    z-index: 9999;
+    z-index: var(--z-index, 9999);
     text-align: left;
     opacity: 1;
     pointer-events: auto;
@@ -1358,7 +1516,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     text-align: left;
     width: 100%;
 }
-.rte-iframe-ratio-item:hover { background: var(--surface-2, var(--canvas)); }
+.rte-iframe-ratio-item:hover {
+    background: var(--surface-2, var(--canvas));
+}
 .rte-iframe-ratio-item[data-active="true"] {
     background: var(--surface-2, var(--canvas));
     box-shadow: inset 2px 0 0 var(--ring);
@@ -1380,15 +1540,39 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-radius: 2px;
     margin: 0 auto;
 }
-.rte-iframe-ratio-swatch[data-ratio="16:9"]  { width: 20px; height: 12px; }
-.rte-iframe-ratio-swatch[data-ratio="4:3"]   { width: 18px; height: 14px; }
-.rte-iframe-ratio-swatch[data-ratio="1:1"]   { width: 14px; height: 14px; }
-.rte-iframe-ratio-swatch[data-ratio="9:16"]  { width: 9px;  height: 16px; }
-.rte-iframe-ratio-swatch[data-ratio="21:9"]  { width: 22px; height: 9px;  }
-.rte-iframe-ratio-swatch[data-ratio="3:2"]   { width: 18px; height: 12px; }
-.rte-iframe-ratio-swatch[data-ratio="2:3"]   { width: 10px; height: 15px; }
-.rte-iframe-ratio-swatch[data-ratio="5:4"]   { width: 15px; height: 12px; }
-.rte-iframe-ratio-swatch[data-ratio="auto"]  {
+.rte-iframe-ratio-swatch[data-ratio="16:9"] {
+    width: 20px;
+    height: 12px;
+}
+.rte-iframe-ratio-swatch[data-ratio="4:3"] {
+    width: 18px;
+    height: 14px;
+}
+.rte-iframe-ratio-swatch[data-ratio="1:1"] {
+    width: 14px;
+    height: 14px;
+}
+.rte-iframe-ratio-swatch[data-ratio="9:16"] {
+    width: 9px;
+    height: 16px;
+}
+.rte-iframe-ratio-swatch[data-ratio="21:9"] {
+    width: 22px;
+    height: 9px;
+}
+.rte-iframe-ratio-swatch[data-ratio="3:2"] {
+    width: 18px;
+    height: 12px;
+}
+.rte-iframe-ratio-swatch[data-ratio="2:3"] {
+    width: 10px;
+    height: 15px;
+}
+.rte-iframe-ratio-swatch[data-ratio="5:4"] {
+    width: 15px;
+    height: 12px;
+}
+.rte-iframe-ratio-swatch[data-ratio="auto"] {
     width: 20px;
     height: 14px;
     background: transparent;
@@ -1432,7 +1616,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     -webkit-appearance: none;
     margin: 0;
 }
-.rte-iframe-ratio-custom-fields input:focus { border-color: var(--ring); }
+.rte-iframe-ratio-custom-fields input:focus {
+    border-color: var(--ring);
+}
 .rte-iframe-ratio-sep {
     font: 600 13px/1 var(--font-mono, ui-monospace, monospace);
     color: var(--fg-muted);
@@ -1448,7 +1634,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
     font: 600 11px/1 var(--font-ui);
 }
-.rte-iframe-ratio-apply:hover { opacity: 0.9; }
+.rte-iframe-ratio-apply:hover {
+    opacity: 0.9;
+}
 
 .ProseMirror-selectednode .rte-iframe-wrap,
 .ProseMirror-selectednode.rte-iframe-wrap {
@@ -1464,8 +1652,22 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-modal, 1000);
+    z-index: var(--z-modal, 10000);
     backdrop-filter: blur(4px);
+}
+/* While the Filerobot image editor is mounted:
+   1. Drop the backdrop blur — a `backdrop-filter` ancestor becomes the
+      containing block for `position: fixed` descendants and clips them.
+   2. Lower the z-index below Filerobot's body-portaled modals. Filerobot
+      renders its Save modal (z-index 11110) and Close confirmation modal
+      (z-index 1200) into `document.body`. Our overlay at --z-modal (9999) sat
+      between those values, so the confirmation modal rendered *behind* the
+      scrim and the Close button looked dead. 1100 keeps the overlay above the
+      editor chrome/host nav while letting every Filerobot modal surface. */
+.rte-img-overlay.rte-img-overlay--edit {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    z-index: 1100;
 }
 .rte-img-modal {
     background: var(--panel, var(--surface));
@@ -1508,7 +1710,10 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-radius: var(--r-2);
     cursor: pointer;
 }
-.rte-img-close:hover { background: var(--surface-2, var(--canvas)); color: var(--fg); }
+.rte-img-close:hover {
+    background: var(--surface-2, var(--canvas));
+    color: var(--fg);
+}
 
 .rte-img-tabs {
     display: flex;
@@ -1527,7 +1732,10 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
     font: 500 12px/1 var(--font-ui);
 }
-.rte-img-tabs button:hover { color: var(--fg); background: var(--surface-2, var(--canvas)); }
+.rte-img-tabs button:hover {
+    color: var(--fg);
+    background: var(--surface-2, var(--canvas));
+}
 .rte-img-tabs button[data-on="true"] {
     color: var(--fg);
     background: var(--surface-2, var(--canvas));
@@ -1570,8 +1778,13 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     background: var(--surface-2, var(--canvas));
     color: var(--fg);
 }
-.rte-img-drop-title { font: 600 14px/1.4 var(--font-ui); color: var(--fg); }
-.rte-img-drop-sub { font: 12px/1.4 var(--font-ui); }
+.rte-img-drop-title {
+    font: 600 14px/1.4 var(--font-ui);
+    color: var(--fg);
+}
+.rte-img-drop-sub {
+    font: 12px/1.4 var(--font-ui);
+}
 
 .rte-img-url-form {
     display: flex;
@@ -1588,7 +1801,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     outline: none;
     margin-bottom: 4px;
 }
-.rte-img-url-form input:focus { border-color: var(--ring, var(--ring)); }
+.rte-img-url-form input:focus {
+    border-color: var(--ring, var(--ring));
+}
 
 .rte-img-preview {
     display: flex;
@@ -1599,8 +1814,7 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border: 1px solid var(--border);
     border-radius: var(--r-3);
     overflow: hidden;
-    background:
-        linear-gradient(45deg, var(--surface-2, #f5f5f5) 25%, transparent 25%) 0 0 / 16px 16px,
+    background: linear-gradient(45deg, var(--surface-2, #f5f5f5) 25%, transparent 25%) 0 0 / 16px 16px,
         linear-gradient(-45deg, var(--surface-2, #f5f5f5) 25%, transparent 25%) 0 8px / 16px 16px,
         linear-gradient(45deg, transparent 75%, var(--surface-2, #f5f5f5) 75%) 8px -8px / 16px 16px,
         linear-gradient(-45deg, transparent 75%, var(--surface-2, #f5f5f5) 75%) -8px 0 / 16px 16px;
@@ -1646,7 +1860,11 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     min-height: 480px;
     isolation: isolate;
     position: relative;
-    contain: layout style paint;
+    /* Do NOT use `contain` here: `contain: paint` turns this into a containing
+       block for Filerobot's fixed/absolute overlays (the Save options modal,
+       confirmation popups, color pickers, dropdowns) and clips them — which
+       made the Save button appear dead and hid tool panels. Let Filerobot
+       position its own overlays against the viewport. */
 }
 .rte-filerobot-loading {
     display: flex;

@@ -37,8 +37,11 @@ export default defineConfig({
         },
     },
     optimizeDeps: {
-        // Filerobot pulls in a heavy tree (konva, scaleflex/ui, etc.). It's
-        // already React.lazy-loaded so we don't need vite to pre-bundle it.
-        exclude: ["react-filerobot-image-editor"],
+        // Filerobot pulls in a heavy tree (konva, scaleflex/ui, etc.) and is
+        // React.lazy-loaded, but it ships several CommonJS-only deps (e.g.
+        // lodash.merge, which has no ESM `default` export). Excluding it left
+        // those CJS modules unconverted, so its lazy import crashed at runtime.
+        // Pre-bundle it (and its CJS deps) so Vite handles the CJS→ESM interop.
+        include: ["react-filerobot-image-editor", "lodash.merge"],
     },
 });

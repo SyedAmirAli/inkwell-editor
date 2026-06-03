@@ -221,12 +221,24 @@ export const ResizableImage = Image.extend({
                     wrap.classList.remove("rte-img-resizing");
                     const finalW = parseInt(img.style.width, 10);
                     const finalH = parseInt(img.style.height, 10);
-                    if (typeof getPos === "function" && !isNaN(finalW)) {
-                        editor.commands.updateAttributes("image", {
-                            width: finalW,
-                            height: isNaN(finalH) ? null : finalH,
-                        });
-                    }
+                    if (typeof getPos !== "function" || isNaN(finalW)) return;
+                    // Commit by document position, not by the current selection.
+                    // `updateAttributes` targets whatever node is selected, which
+                    // can drift after a pointer-capture drag — when it misses, the
+                    // node keeps width:null and the image snaps back to full size.
+                    const pos = getPos();
+                    if (pos == null) return;
+                    const { state, view } = editor;
+                    const target = state.doc.nodeAt(pos);
+                    if (!target || target.type.name !== "image") return;
+                    const tr = state.tr.setNodeMarkup(pos, undefined, {
+                        ...target.attrs,
+                        width: finalW,
+                        height: isNaN(finalH) ? null : finalH,
+                    });
+                    // Keep the image selected so its handles stay visible.
+                    tr.setSelection(NodeSelection.create(tr.doc, pos));
+                    view.dispatch(tr);
                 };
                 window.addEventListener("pointermove", onMove);
                 window.addEventListener("pointerup", onUp);
@@ -263,8 +275,17 @@ export const ResizableImage = Image.extend({
                     return false;
                 },
                 ignoreMutation(mutation) {
-                    // Ignore style mutations during drag-resize
-                    if (mutation.type === "attributes" && mutation.attributeName === "style") return true;
+                    // Ignore the inline size mutations we apply ourselves during
+                    // and after drag-resize, so ProseMirror doesn't re-read the
+                    // DOM and clobber the committed width/height.
+                    if (
+                        mutation.type === "attributes" &&
+                        (mutation.attributeName === "style" ||
+                            mutation.attributeName === "width" ||
+                            mutation.attributeName === "height")
+                    ) {
+                        return true;
+                    }
                     return false;
                 },
             };

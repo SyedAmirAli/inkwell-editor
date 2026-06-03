@@ -1,4 +1,5 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import type { Editor as TiptapEditor } from "@tiptap/react";
 
 import { Menubar } from "./components/Menubar";
@@ -10,9 +11,9 @@ import { AIPanel } from "./components/AIPanel";
 import { CommentPanel, type CommentItem } from "./components/CommentPanel";
 import { Icons } from "./components/Icons";
 
-import type { EditorHandle, FontDef, Mode, Theme } from "./types";
+import type { EditorExtraStyleProps, EditorHandle, EditorStyleProperties, FontDef, Mode, Theme } from "./types";
 
-export type { EditorHandle, FontDef, Mode, Theme } from "./types";
+export type { EditorHandle, FontDef, Mode, Theme, EditorExtraStyleProps } from "./types";
 
 export interface EditorProps {
     /** Initial canvas mode. Defaults to `"document"`. */
@@ -27,10 +28,52 @@ export interface EditorProps {
     documentName?: string;
     /** Whether the AI panel starts open. Defaults to `true`. */
     aiPanelOpen?: boolean;
+    /**
+     * Whether to show the floating mode rail (compact / document / fullscreen
+     * switcher) pinned to the editor's right edge. Defaults to `true`. Set to
+     * `false` when embedding to lock the editor to a single mode.
+     */
+    showModeRail?: boolean;
     /** Fired once the underlying Tiptap editor is ready. */
     onReady?: (editor: TiptapEditor) => void;
     /** Fired on every content change with the latest HTML. */
     onChange?: (html: string) => void;
+    /**
+     * Extra class name(s) merged onto the editor's root element, so it can be
+     * targeted from host stylesheets when embedded in an existing layout.
+     */
+    className?: string;
+    /**
+     * Inline styles on the editor root. Set CSS custom properties directly when
+     * you already use design tokens, e.g. `"--rte-shell-top": "62px"`.
+     *
+     * Prefer {@link EditorExtraStyleProps extraStyle} for typed layout overrides
+     * when embedding — see `packages/demo/src/editorPresets.ts` for examples.
+     */
+    style?: EditorStyleProperties;
+    /**
+     * Typed layout overrides for embedding. Merged into the same CSS variables
+     * as `style`; `extraStyle` wins when both set the same hook.
+     *
+     * ```tsx
+     * <Editor
+     *   showModeRail={false}
+     *   extraStyle={{
+     *     page: {
+     *       minHeight: "0px",
+     *       padding: "0px",
+     *       background: "transparent",
+     *       inset: "32px 40px",
+     *     },
+     *     width: "100%",
+     *     height: "520px",
+     *     canvasPadding: "0px",
+     *     shell: { top: "62px" },
+     *   }}
+     * />
+     * ```
+     */
+    extraStyle?: EditorExtraStyleProps;
 }
 
 const applyTheme = (theme: Theme, custom: { fg: string; bg: string }) => {
@@ -55,8 +98,12 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         defaultFonts,
         documentName = "Untitled document",
         aiPanelOpen = false,
+        showModeRail = true,
         onReady,
         onChange,
+        className,
+        style,
+        extraStyle,
     },
     ref
 ) {
@@ -71,6 +118,21 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     const [commentQuote, setCommentQuote] = useState("");
     const [comments, setComments] = useState<CommentItem[]>([]);
     const editorRef = useRef<TiptapEditor | null>(null);
+
+    const styles = useMemo(() => {
+        return {
+            ...style,
+
+            "--rte-page-min-height": extraStyle?.page?.minHeight ?? style?.["--rte-page-min-height"] ?? undefined,
+            "--rte-page-padding": extraStyle?.page?.padding ?? style?.["--rte-page-padding"] ?? undefined,
+            "--rte-page-bg": extraStyle?.page?.background ?? style?.["--rte-page-bg"] ?? undefined,
+            "--rte-width": extraStyle?.width ?? style?.["--rte-width"] ?? undefined,
+            "--rte-height": extraStyle?.height ?? style?.["--rte-height"] ?? undefined,
+            "--rte-canvas-padding": extraStyle?.canvasPadding ?? style?.["--rte-canvas-padding"] ?? undefined,
+            "--rte-page-inset": extraStyle?.page?.inset ?? style?.["--rte-page-inset"] ?? undefined,
+            "--rte-shell-top": extraStyle?.shell?.top ?? style?.["--rte-shell-top"] ?? undefined,
+        } as CSSProperties;
+    }, [style, extraStyle]);
 
     useImperativeHandle(
         ref,
@@ -152,9 +214,13 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     );
 
     return (
-        <div className="rte-app-page" data-screen-label="Inkwell editor">
+        <div
+            className={className ? `rte-app-page ${className}` : "rte-app-page"}
+            style={styles}
+            data-screen-label="Inkwell editor"
+        >
             <div className="rte-stage" data-mode={mode}>
-                <ModeRail mode={mode} onMode={setMode} />
+                {showModeRail && <ModeRail mode={mode} onMode={setMode} />}
                 <div className="rte-shell" data-mode={mode}>
                     {theme === "custom" && (
                         <div className="rte-custom-bar">

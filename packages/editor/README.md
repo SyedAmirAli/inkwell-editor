@@ -115,8 +115,51 @@ export default function App() {
 | `aiPanelOpen`  | `boolean`                                             | `true`               | Whether the right-side AI panel starts open. Users can collapse/expand it. |
 | `onReady`      | `(editor: TiptapEditor) => void`                      | —                    | Called once with the underlying Tiptap `Editor` instance after mount. |
 | `onChange`     | `(html: string) => void`                              | —                    | Called on every content change with the latest HTML. |
+| `className`    | `string`                                              | —                    | Extra class on the editor root (`.rte-app-page`). |
+| `style`        | `EditorStyleProperties`                               | —                    | Raw CSS on the root, including `--rte-*` custom properties. |
+| `extraStyle`   | `EditorExtraStyleProps`                               | —                    | Typed embedding layout; merged into the same `--rte-*` hooks (wins over `style`). |
+| `showModeRail` | `boolean`                                             | `true`               | Floating compact/document/fullscreen switcher. Set `false` when embedding in a fixed layout. |
 
 The component also accepts a `ref` typed as `Ref<EditorHandle>` — see below.
+
+### Embedding with `extraStyle`
+
+By default the editor behaves like a full-page app. When you drop it into a form, dashboard, or fixed header layout, pass `extraStyle` so the canvas fits your container instead of claiming the viewport:
+
+```tsx
+import { Editor, type EditorExtraStyleProps } from "@syedamirali/inkwell-editor";
+
+const embedded: EditorExtraStyleProps = {
+  page: {
+    minHeight: "0px",
+    padding: "0px",
+    background: "transparent",
+    inset: "32px 40px",
+  },
+  width: "100%",
+  height: "520px",
+  canvasPadding: "0px",
+  shell: { top: "62px" }, // offset fullscreen below your fixed navbar
+};
+
+<Editor
+  showModeRail={false}
+  extraStyle={embedded}
+/>
+```
+
+| `extraStyle` key | CSS variable | Typical value when embedding |
+| ---------------- | ------------ | ---------------------------- |
+| `page.minHeight` | `--rte-page-min-height` | `"0px"` |
+| `page.padding` | `--rte-page-padding` | `"0px"` |
+| `page.background` | `--rte-page-bg` | `"transparent"` |
+| `page.inset` | `--rte-page-inset` | `"32px 40px"` |
+| `width` | `--rte-width` | `"100%"` |
+| `height` | `--rte-height` | `"520px"` or `calc(100vh - …)` |
+| `canvasPadding` | `--rte-canvas-padding` | `"0px"` |
+| `shell.top` | `--rte-shell-top` | height of your fixed header(s) |
+
+You can still set the same hooks via `style` if you prefer raw CSS variables; `extraStyle` is merged on top. The demo package ships ready-made presets in `packages/demo/src/editorPresets.ts` (`shellBelowDemoNav`, `embeddedFormEditor`, `embeddedAppEditor`).
 
 ---
 

@@ -1,80 +1,80 @@
 {
-  "name": "@syedamirali/inkwell-editor",
-  "version": "0.2.0",
-  "description": "Premium monochrome rich text editor for React — Tiptap-powered, with AI panel, tables, three canvas modes, and themeable.",
-  "type": "module",
-  "main": "./dist/inkwell-editor.cjs.js",
-  "module": "./dist/inkwell-editor.es.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/inkwell-editor.es.js",
-      "require": "./dist/inkwell-editor.cjs.js"
+    "name": "@syedamirali/inkwell-editor",
+    "version": "1.0.0",
+    "description": "Premium monochrome rich text editor for React — Tiptap-powered, with AI panel, tables, three canvas modes, and themeable.",
+    "type": "module",
+    "main": "./dist/inkwell-editor.cjs.js",
+    "module": "./dist/inkwell-editor.es.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/inkwell-editor.es.js",
+            "require": "./dist/inkwell-editor.cjs.js"
+        },
+        "./styles.css": "./dist/inkwell-editor.css"
     },
-    "./styles.css": "./dist/inkwell-editor.css"
-  },
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "keywords": [
-    "rich-text-editor",
-    "wysiwyg",
-    "tiptap",
-    "prosemirror",
-    "react",
-    "ai",
-    "monochrome",
-    "inkwell"
-  ],
-  "license": "MIT",
-  "author": "Syed Amir Ali",
-  "homepage": "https://syedamirali.github.io/inkwell-editor/",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SyedAmirAli/inkwell-editor.git"
-  },
-  "bugs": {
-    "url": "https://github.com/SyedAmirAli/inkwell-editor/issues"
-  },
-  "scripts": {
-    "dev": "vite build --watch",
-    "build": "vite build",
-    "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
-  },
-  "dependencies": {
-    "@tiptap/core": "^3.23.1",
-    "@tiptap/extension-character-count": "^3.23.1",
-    "@tiptap/extension-color": "^3.23.1",
-    "@tiptap/extension-font-family": "^3.23.1",
-    "@tiptap/extension-highlight": "^3.23.1",
-    "@tiptap/extension-image": "^3.23.1",
-    "@tiptap/extension-link": "^3.23.1",
-    "@tiptap/extension-placeholder": "^3.23.1",
-    "@tiptap/extension-table": "^3.23.1",
-    "@tiptap/extension-task-item": "^3.23.1",
-    "@tiptap/extension-task-list": "^3.23.1",
-    "@tiptap/extension-text-align": "^3.23.1",
-    "@tiptap/extension-text-style": "^3.23.1",
-    "@tiptap/extension-underline": "^3.23.1",
-    "@tiptap/pm": "^3.23.1",
-    "@tiptap/react": "^3.23.1",
-    "@tiptap/starter-kit": "^3.23.1",
-    "konva": "^9.3.20",
-    "react-filerobot-image-editor": "4.9.1",
-    "react-konva": "18.2.10",
-    "styled-components": "^6.1.13"
-  },
-  "devDependencies": {
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.3",
-    "vite-plugin-dts": "^4.5.4"
-  }
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "keywords": [
+        "rich-text-editor",
+        "wysiwyg",
+        "tiptap",
+        "prosemirror",
+        "react",
+        "ai",
+        "monochrome",
+        "inkwell"
+    ],
+    "license": "MIT",
+    "author": "Syed Amir Ali",
+    "homepage": "https://syedamirali.github.io/inkwell-editor/",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/SyedAmirAli/inkwell-editor.git"
+    },
+    "bugs": {
+        "url": "https://github.com/SyedAmirAli/inkwell-editor/issues"
+    },
+    "scripts": {
+        "dev": "vite build --watch",
+        "build": "vite build",
+        "typecheck": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0"
+    },
+    "dependencies": {
+        "@tiptap/core": "^3.23.1",
+        "@tiptap/extension-character-count": "^3.23.1",
+        "@tiptap/extension-color": "^3.23.1",
+        "@tiptap/extension-font-family": "^3.23.1",
+        "@tiptap/extension-highlight": "^3.23.1",
+        "@tiptap/extension-image": "^3.23.1",
+        "@tiptap/extension-link": "^3.23.1",
+        "@tiptap/extension-placeholder": "^3.23.1",
+        "@tiptap/extension-table": "^3.23.1",
+        "@tiptap/extension-task-item": "^3.23.1",
+        "@tiptap/extension-task-list": "^3.23.1",
+        "@tiptap/extension-text-align": "^3.23.1",
+        "@tiptap/extension-text-style": "^3.23.1",
+        "@tiptap/extension-underline": "^3.23.1",
+        "@tiptap/pm": "^3.23.1",
+        "@tiptap/react": "^3.23.1",
+        "@tiptap/starter-kit": "^3.23.1",
+        "konva": "^9.3.20",
+        "react-filerobot-image-editor": "4.9.1",
+        "react-konva": "18.2.10",
+        "styled-components": "^6.1.13"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^4.3.4",
+        "vite": "^6.0.3",
+        "vite-plugin-dts": "^4.5.4"
+    }
 }

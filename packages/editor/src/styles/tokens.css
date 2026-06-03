@@ -253,7 +253,8 @@
     --z-floating: 20;
     --z-dropdown: 30;
     --z-tooltip: 40;
-    --z-modal: 60;
+    --z-modal: 9999;
+    --z-index: 998;
     --z-toast: 61;
 }
 

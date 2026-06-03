@@ -1,4 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@syedamirali/inkwell-editor": ["../editor/src/index.ts"],
+      "@syedamirali/inkwell-editor/styles.css": ["../editor/src/styles.css"]
+    }
+  },
   "include": ["src", "vite.config.ts"]
 }
