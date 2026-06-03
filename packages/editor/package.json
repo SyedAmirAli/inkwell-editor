@@ -1,6 +1,6 @@
 {
   "name": "@syedamirali/inkwell-editor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Premium monochrome rich text editor for React — Tiptap-powered, with AI panel, tables, three canvas modes, and themeable.",
   "type": "module",
   "main": "./dist/inkwell-editor.cjs.js",
