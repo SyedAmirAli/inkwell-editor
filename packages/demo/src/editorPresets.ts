@@ -14,6 +14,15 @@ export const DEMO_NAVBAR_SHELL_OFFSET = "62px";
  */
 export const shellBelowDemoNav: EditorExtraStyleProps = {
     shell: { top: DEMO_NAVBAR_SHELL_OFFSET },
+    page: {
+        inset: "16px 20px",
+        padding: "0px",
+        background: "transparent",
+        minHeight: "0px",
+    },
+    // width: "100%",
+    // height: "520px",
+    // canvasPadding: "0px",
 };
 
 /**
@@ -41,7 +50,7 @@ export const embeddedFormEditor: EditorExtraStyleProps = {
         minHeight: "0px",
         padding: "0px",
         background: "transparent",
-        inset: "32px 40px",
+        inset: "16px 20px",
     },
     width: "100%",
     height: "520px",

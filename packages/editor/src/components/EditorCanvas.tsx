@@ -464,6 +464,36 @@ const editor = useEditor({
 <p>Open the slash menu by typing <code>/</code> on an empty line, or use the toolbar above to format your content. Click any text to start editing.</p>
 `;
 
+/* ── Page width (drag-to-resize) ───────────────────────────────────────
+   The document "page" is centred in the canvas, so each edge handle moves
+   half of the width change. Widths are stored per mode, since document and
+   fullscreen have very different defaults. */
+const PAGE_WIDTH_KEY = "inkwell.pageWidth";
+const MIN_PAGE_WIDTH = 360;
+
+function readPageWidths(): Record<string, number> {
+    try {
+        const raw = JSON.parse(localStorage.getItem(PAGE_WIDTH_KEY) ?? "{}");
+        return raw && typeof raw === "object" ? raw : {};
+    } catch {
+        return {};
+    }
+}
+
+function readPageWidth(mode: Mode): number | null {
+    const value = readPageWidths()[mode];
+    return typeof value === "number" && value > 0 ? value : null;
+}
+
+function writePageWidth(mode: Mode, width: number | null) {
+    const all = readPageWidths();
+    if (width == null) delete all[mode];
+    else all[mode] = Math.round(width);
+    try {
+        localStorage.setItem(PAGE_WIDTH_KEY, JSON.stringify(all));
+    } catch { /* storage unavailable — width stays session-only */ }
+}
+
 /* ── Main canvas ───────────────────────────────────────────────────── */
 export function EditorCanvas({
     mode,
@@ -476,6 +506,98 @@ export function EditorCanvas({
     const [sourceValue, setSourceValue] = useState("");
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
+
+    const canvasRef = useRef<HTMLDivElement>(null);
+    const innerRef = useRef<HTMLDivElement>(null);
+    const [pageWidth, setPageWidth] = useState<number | null>(() => readPageWidth(mode));
+    const [resizing, setResizing] = useState(false);
+    const widthRef = useRef<number | null>(pageWidth);
+
+    // Each mode remembers its own width
+    useEffect(() => {
+        const stored = readPageWidth(mode);
+        widthRef.current = stored;
+        setPageWidth(stored);
+    }, [mode]);
+
+    const applyWidth = (next: number | null) => {
+        widthRef.current = next;
+        setPageWidth(next);
+    };
+
+    const resizeBounds = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { min: MIN_PAGE_WIDTH, max: MIN_PAGE_WIDTH };
+        const cs = window.getComputedStyle(canvas);
+        const max = canvas.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        return { min: MIN_PAGE_WIDTH, max: Math.max(MIN_PAGE_WIDTH, max) };
+    };
+
+    const startResize = (side: "left" | "right") => (e: React.PointerEvent) => {
+        const inner = innerRef.current;
+        if (!inner || e.button !== 0) return;
+        e.preventDefault();
+
+        const startX = e.clientX;
+        const startWidth = inner.getBoundingClientRect().width;
+        const { min, max } = resizeBounds();
+        setResizing(true);
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+
+        const onMove = (ev: PointerEvent) => {
+            const delta = (ev.clientX - startX) * (side === "right" ? 1 : -1);
+            applyWidth(Math.min(max, Math.max(min, startWidth + delta * 2)));
+        };
+        const onUp = () => {
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onUp);
+            setResizing(false);
+            document.body.style.removeProperty("cursor");
+            document.body.style.removeProperty("user-select");
+            writePageWidth(mode, widthRef.current);
+        };
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+    };
+
+    const resetWidth = () => {
+        applyWidth(null);
+        writePageWidth(mode, null);
+    };
+
+    const nudgeWidth = (side: "left" | "right") => (e: React.KeyboardEvent) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        const inner = innerRef.current;
+        if (!inner) return;
+        e.preventDefault();
+        const step = (e.key === "ArrowRight" ? 1 : -1) * (side === "right" ? 1 : -1) * 2 * 20;
+        const { min, max } = resizeBounds();
+        const next = Math.min(max, Math.max(min, inner.getBoundingClientRect().width + step));
+        applyWidth(next);
+        writePageWidth(mode, next);
+    };
+
+    const showResizers = mode !== "compact" && !freeCanvas;
+    // Rendered via a call (not <Resizer/>) so the node keeps its identity
+    // across re-renders and does not lose focus mid-drag.
+    const renderResizer = (side: "left" | "right") => (
+        <div
+            key={side}
+            className="rte-page-resizer"
+            data-side={side}
+            data-active={resizing || undefined}
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize page width"
+            tabIndex={0}
+            title="Drag to resize the page · double-click to reset"
+            onPointerDown={startResize(side)}
+            onDoubleClick={resetWidth}
+            onKeyDown={nudgeWidth(side)}
+        />
+    );
 
     const editor = useEditor({
         extensions: [
@@ -533,8 +655,17 @@ export function EditorCanvas({
     if (mode === "compact") return null;
 
     return (
-        <div className="rte-canvas" data-mode={mode} data-free={freeCanvas || undefined}>
-            <div className="rte-canvas-inner" data-mode={mode} data-free={freeCanvas || undefined}>
+        <div className="rte-canvas" ref={canvasRef} data-mode={mode} data-free={freeCanvas || undefined}>
+            <div
+                className="rte-canvas-inner"
+                ref={innerRef}
+                data-mode={mode}
+                data-free={freeCanvas || undefined}
+                data-resizing={resizing || undefined}
+                style={showResizers && pageWidth ? { maxWidth: `${pageWidth}px` } : undefined}
+            >
+                {showResizers && renderResizer("left")}
+                {showResizers && renderResizer("right")}
                 {editor && <BubbleMenuPortal editor={editor} />}
                 {editor && <FloatingMenuPortal editor={editor} />}
                 {editor && <SlashMenuPortal editor={editor} />}

@@ -406,6 +406,69 @@
     background: transparent;
 }
 
+/* ── Page width handles ───────────────────────────────────────────────
+   A hit strip sitting in the canvas gutter on each side of the page. The
+   line only appears on hover (or while dragging) so it stays out of the
+   way while writing. */
+.rte-page-resizer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: col-resize;
+    touch-action: none;
+    z-index: 3;
+    outline: none;
+}
+.rte-page-resizer[data-side="left"] {
+    left: -16px;
+}
+.rte-page-resizer[data-side="right"] {
+    right: -16px;
+}
+/* The full-height rule */
+.rte-page-resizer::before {
+    content: "";
+    width: 2px;
+    height: 100%;
+    border-radius: 1px;
+    background: var(--ink-12);
+    opacity: 0;
+    transition: opacity var(--dur-1) var(--ease-out);
+}
+/* The grip pill, centred vertically */
+.rte-page-resizer::after {
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--ink-12);
+    opacity: 0;
+    transition: opacity var(--dur-1) var(--ease-out);
+}
+.rte-page-resizer:hover::before,
+.rte-page-resizer:focus-visible::before,
+.rte-page-resizer[data-active]::before {
+    opacity: 0.18;
+}
+.rte-page-resizer:hover::after,
+.rte-page-resizer:focus-visible::after,
+.rte-page-resizer[data-active]::after {
+    opacity: 0.55;
+}
+.rte-page-resizer:active::before,
+.rte-page-resizer[data-active]::before {
+    opacity: 0.28;
+}
+/* Suppress text selection flicker inside the page while dragging */
+.rte-canvas-inner[data-resizing] {
+    user-select: none;
+}
+
 /* Block + handle */
 .rte-block {
     position: relative;
