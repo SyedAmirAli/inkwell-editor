@@ -42,7 +42,9 @@ export function FormTab() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        const body = editorRef.current?.getHTML() ?? "";
+        // Inlined HTML: renders correctly wherever it is stored/served, with
+        // no dependency on the editor stylesheet.
+        const body = editorRef.current?.getInlinedHTML() ?? "";
         setSubmitted({ fields: form, bodyBytes: body.length });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };

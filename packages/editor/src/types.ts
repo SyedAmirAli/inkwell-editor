@@ -21,8 +21,20 @@ export interface FontDef {
 
 /** Imperative handle exposed via `ref` on `<Editor>`. */
 export interface EditorHandle {
-    /** Current editor content as serialized HTML. */
+    /**
+     * Current editor content as serialized HTML. Structural markup only — it
+     * relies on the editor stylesheet (`.rte-content` / `data-*` attributes) to
+     * look right. Use {@link EditorHandle.getInlinedHTML} when the HTML has to
+     * render outside the editor.
+     */
     getHTML(): string;
+    /**
+     * Current editor content as a self-contained HTML snippet with every style
+     * written out as an inline `style=""` attribute. Renders identically with
+     * no stylesheet — safe for storing in a CMS, emailing, or rendering on a
+     * page that never loads the editor's CSS.
+     */
+    getInlinedHTML(): string;
     /** Current editor content as a Tiptap/ProseMirror JSON document. */
     getJSON(): unknown;
     /** Replace the editor content. Accepts HTML or a JSON document. */

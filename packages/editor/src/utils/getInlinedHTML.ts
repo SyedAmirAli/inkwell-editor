@@ -209,10 +209,15 @@ function processElement(el: Element): void {
     if (nextStyle) el.setAttribute("style", nextStyle);
 
     if (el.tagName.toLowerCase() === "a") {
+        // Preserve the author's rel/target choices from the link dialog; only
+        // add the noopener/noreferrer guard when a new tab is opened without one.
         const href = el.getAttribute("href");
-        if (href && /^https?:\/\//i.test(href)) {
-            el.setAttribute("rel", "noopener noreferrer");
-            if (!el.getAttribute("target")) el.setAttribute("target", "_blank");
+        if (href && /^https?:\/\//i.test(href) && el.getAttribute("target") === "_blank") {
+            const rel = (el.getAttribute("rel") ?? "").split(/\s+/).filter(Boolean);
+            for (const token of ["noopener", "noreferrer"]) {
+                if (!rel.includes(token)) rel.push(token);
+            }
+            el.setAttribute("rel", rel.join(" "));
         }
     }
 

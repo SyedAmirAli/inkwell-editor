@@ -231,6 +231,57 @@
     display: flex;
     gap: 8px;
     justify-content: flex-end;
+    margin-top: 16px;
+}
+/* Open-in segmented control */
+.rte-link-seg {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-2);
+    background: var(--canvas);
+}
+.rte-link-seg-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: var(--r-1);
+    background: transparent;
+    color: var(--fg-muted);
+    font: 12px/1 var(--font-ui);
+    cursor: pointer;
+}
+.rte-link-seg-btn:hover {
+    color: var(--fg);
+}
+.rte-link-seg-btn.is-on {
+    background: var(--ink-12);
+    color: var(--ink-0);
+}
+/* rel chips */
+.rte-link-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.rte-link-chip {
+    padding: 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-pill, 999px);
+    background: var(--canvas);
+    color: var(--fg-muted);
+    font: 12px/1 var(--font-ui);
+    cursor: pointer;
+}
+.rte-link-chip:hover {
+    color: var(--fg);
+    border-color: var(--ring);
+}
+.rte-link-chip.is-on {
+    background: var(--ink-12);
+    border-color: var(--ink-12);
+    color: var(--ink-0);
 }
 .rte-link-label {
     display: block;

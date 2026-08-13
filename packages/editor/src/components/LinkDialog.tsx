@@ -1,19 +1,44 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+const REL_OPTIONS = [
+  { value: "nofollow", label: "nofollow", hint: "Don't pass ranking credit" },
+  { value: "sponsored", label: "sponsored", hint: "Paid or affiliate link" },
+  { value: "ugc", label: "ugc", hint: "User-generated content" },
+  { value: "noopener", label: "noopener", hint: "Block window.opener access" },
+  { value: "noreferrer", label: "noreferrer", hint: "Don't send the referrer" },
+];
+
+const parseRel = (rel?: string | null) =>
+  (rel ?? "").split(/\s+/).filter(Boolean);
+
 interface LinkDialogProps {
   open: boolean;
   initialHref?: string;
   initialTitle?: string;
+  initialTarget?: string | null;
+  initialRel?: string | null;
   hasLink?: boolean;
-  onApply: (href: string, title: string) => void;
+  onApply: (href: string, title: string, target: string | null, rel: string | null) => void;
   onRemove: () => void;
   onClose: () => void;
 }
 
-export function LinkDialog({ open, initialHref = "", initialTitle = "", hasLink, onApply, onRemove, onClose }: LinkDialogProps) {
+export function LinkDialog({
+  open,
+  initialHref = "",
+  initialTitle = "",
+  initialTarget = null,
+  initialRel = null,
+  hasLink,
+  onApply,
+  onRemove,
+  onClose,
+}: LinkDialogProps) {
   const [href,  setHref]  = useState(initialHref);
   const [title, setTitle] = useState(initialTitle);
+  const [newTab, setNewTab] = useState(initialTarget === "_blank");
+  const [rels,  setRels]  = useState<string[]>(parseRel(initialRel));
   const hrefRef = useRef<HTMLInputElement>(null);
 
   // Sync fields when dialog is (re-)opened
@@ -21,11 +46,30 @@ export function LinkDialog({ open, initialHref = "", initialTitle = "", hasLink,
     if (open) {
       setHref(initialHref);
       setTitle(initialTitle);
+      setNewTab(initialTarget === "_blank");
+      setRels(parseRel(initialRel));
       setTimeout(() => hrefRef.current?.focus(), 40);
     }
   }, [open]);
 
-  const apply = () => { onApply(href.trim(), title.trim()); };
+  const toggleRel = (value: string) =>
+    setRels((prev) => (prev.includes(value) ? prev.filter((r) => r !== value) : [...prev, value]));
+
+  // Opening in a new tab without noopener/noreferrer is a known footgun — add
+  // them the first time the user switches, but let them opt back out.
+  const setTarget = (next: boolean) => {
+    setNewTab(next);
+    if (next) {
+      setRels((prev) => [...prev, ...["noopener", "noreferrer"].filter((r) => !prev.includes(r))]);
+    }
+  };
+
+  const apply = () => {
+    const relValue = REL_OPTIONS.filter((o) => rels.includes(o.value))
+      .map((o) => o.value)
+      .join(" ");
+    onApply(href.trim(), title.trim(), newTab ? "_blank" : null, relValue || null);
+  };
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter")  { e.preventDefault(); apply(); }
@@ -57,8 +101,43 @@ export function LinkDialog({ open, initialHref = "", initialTitle = "", hasLink,
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Describe the link…"
           onKeyDown={onKey}
-          style={{ marginBottom: 16 }}
         />
+
+        <label className="rte-link-label">Open in</label>
+        <div className="rte-link-seg" role="group">
+          <button
+            type="button"
+            className={`rte-link-seg-btn${!newTab ? " is-on" : ""}`}
+            aria-pressed={!newTab}
+            onClick={() => setTarget(false)}
+          >
+            Current tab
+          </button>
+          <button
+            type="button"
+            className={`rte-link-seg-btn${newTab ? " is-on" : ""}`}
+            aria-pressed={newTab}
+            onClick={() => setTarget(true)}
+          >
+            New tab
+          </button>
+        </div>
+
+        <label className="rte-link-label">Relationship <span style={{ fontWeight: 400, color: "var(--fg-muted)" }}>(rel)</span></label>
+        <div className="rte-link-chips">
+          {REL_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              title={o.hint}
+              className={`rte-link-chip${rels.includes(o.value) ? " is-on" : ""}`}
+              aria-pressed={rels.includes(o.value)}
+              onClick={() => toggleRel(o.value)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
 
         <div className="rte-link-dialog-actions">
           {hasLink && (

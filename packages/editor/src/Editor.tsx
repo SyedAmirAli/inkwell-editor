@@ -10,6 +10,7 @@ import { CompactEditor } from "./components/CompactEditor";
 import { AIPanel } from "./components/AIPanel";
 import { CommentPanel, type CommentItem } from "./components/CommentPanel";
 import { Icons } from "./components/Icons";
+import { getInlinedHTML } from "./utils/getInlinedHTML";
 
 import type { EditorExtraStyleProps, EditorHandle, EditorStyleProperties, FontDef, Mode, Theme } from "./types";
 
@@ -138,6 +139,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         ref,
         () => ({
             getHTML: () => editorRef.current?.getHTML() ?? "",
+            getInlinedHTML: () => getInlinedHTML(editorRef.current?.getHTML() ?? ""),
             getJSON: () => editorRef.current?.getJSON() ?? {},
             setContent: (content) => {
                 editorRef.current?.commands.setContent(content as string);

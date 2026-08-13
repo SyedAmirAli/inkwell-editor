@@ -354,6 +354,8 @@ export function Toolbar({
     const [customFonts, setCustomFonts] = useState<CustomFont[]>(() => readCustomFonts());
     const [linkUrl, setLinkUrl] = useState("");
     const [linkTitle, setLinkTitle] = useState("");
+    const [linkTarget, setLinkTarget] = useState<string | null>(null);
+    const [linkRel, setLinkRel] = useState<string | null>(null);
     const tableBtnRef = useRef<HTMLButtonElement>(null);
 
     const blockRef = useRef<HTMLDivElement>(null);
@@ -404,6 +406,8 @@ export function Toolbar({
                     isStrike: e.isActive("strike"),
                     isLink: e.isActive("link"),
                     isHighlight: e.isActive("highlight"),
+                    textColor: tsAttrs?.color ?? null,
+                    highlightColor: e.getAttributes("highlight")?.color ?? null,
                     isBulletList: e.isActive("bulletList"),
                     isOrderedList: e.isActive("orderedList"),
                     isTaskList: e.isActive("taskList"),
@@ -431,6 +435,8 @@ export function Toolbar({
         isStrike: false,
         isLink: false,
         isHighlight: false,
+        textColor: null,
+        highlightColor: null,
         isBulletList: false,
         isOrderedList: false,
         isTaskList: false,
@@ -455,10 +461,12 @@ export function Toolbar({
         const selectedText = editor.state.doc.textBetween(from, to, " ");
         setLinkUrl(attrs.href || "");
         setLinkTitle(attrs.title || selectedText || "");
+        setLinkTarget(attrs.target ?? null);
+        setLinkRel(attrs.rel ?? null);
         setShowLinkDialog(true);
     };
 
-    const handleLinkApply = (href: string, title: string) => {
+    const handleLinkApply = (href: string, title: string, target: string | null, rel: string | null) => {
         if (!editor) return;
         const range = savedRange.current;
         savedRange.current = null;
@@ -468,7 +476,7 @@ export function Toolbar({
         } else {
             chain
                 .extendMarkRange("link")
-                .setLink({ href, title: title || null })
+                .setLink({ href, title: title || null, target, rel })
                 .run();
         }
         setShowLinkDialog(false);
@@ -836,7 +844,15 @@ export function Toolbar({
                 {/* Text color */}
                 <div ref={colorRef} style={{ position: "relative" }}>
                     <Btn
-                        icon={<Icons.textColor />}
+                        icon={
+                            <span className="rte-tb-swatch-ic">
+                                <Icons.textColor />
+                                <span
+                                    className="rte-tb-swatch"
+                                    style={{ background: s.textColor ?? "currentColor" }}
+                                />
+                            </span>
+                        }
                         on={showColorMenu}
                         title="Text color"
                         onClick={() => setShowColorMenu((v) => !v)}
@@ -861,7 +877,15 @@ export function Toolbar({
                 {/* Highlight / cell background */}
                 <div ref={highlightRef} style={{ position: "relative" }}>
                     <Btn
-                        icon={<Icons.highlight />}
+                        icon={
+                            <span className="rte-tb-swatch-ic">
+                                <Icons.highlight />
+                                <span
+                                    className="rte-tb-swatch"
+                                    style={{ background: s.highlightColor ?? "currentColor" }}
+                                />
+                            </span>
+                        }
                         on={s.isHighlight || showHLMenu}
                         title={
                             editor?.isActive("table")
@@ -1037,6 +1061,8 @@ export function Toolbar({
                 open={showLinkDialog}
                 initialHref={linkUrl}
                 initialTitle={linkTitle}
+                initialTarget={linkTarget}
+                initialRel={linkRel}
                 hasLink={editor?.isActive("link")}
                 onApply={handleLinkApply}
                 onRemove={handleLinkRemove}

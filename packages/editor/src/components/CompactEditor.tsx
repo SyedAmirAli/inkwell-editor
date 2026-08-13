@@ -28,6 +28,8 @@ export function CompactEditor() {
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [linkUrl, setLinkUrl] = useState("");
     const [linkTitle, setLinkTitle] = useState("");
+    const [linkTarget, setLinkTarget] = useState(null);
+    const [linkRel, setLinkRel] = useState(null);
     const savedRange = useRef(null);
 
     const editor = useEditor({
@@ -52,10 +54,12 @@ export function CompactEditor() {
         const selectedText = editor.state.doc.textBetween(from, to, " ");
         setLinkUrl(attrs.href || "");
         setLinkTitle(attrs.title || selectedText || "");
+        setLinkTarget(attrs.target ?? null);
+        setLinkRel(attrs.rel ?? null);
         setShowLinkDialog(true);
     };
 
-    const handleLinkApply = (href, title) => {
+    const handleLinkApply = (href, title, target, rel) => {
         if (!editor) return;
         const range = savedRange.current;
         savedRange.current = null;
@@ -65,7 +69,7 @@ export function CompactEditor() {
         if (!href) {
             chain.extendMarkRange("link").unsetLink().run();
         } else {
-            chain.extendMarkRange("link").setLink({ href, title: title || null }).run();
+            chain.extendMarkRange("link").setLink({ href, title: title || null, target, rel }).run();
         }
         setShowLinkDialog(false);
     };
@@ -164,6 +168,8 @@ export function CompactEditor() {
                 open={showLinkDialog}
                 initialHref={linkUrl}
                 initialTitle={linkTitle}
+                initialTarget={linkTarget}
+                initialRel={linkRel}
                 hasLink={editor?.isActive("link")}
                 onApply={handleLinkApply}
                 onRemove={() => {
