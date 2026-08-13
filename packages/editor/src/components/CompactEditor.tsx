@@ -87,7 +87,7 @@ export function CompactEditor() {
         on?: boolean;
         onMouseDown?: (e) => void;
     }) => (
-        <button
+        <button type="button"
             className="rte-tb-btn"
             data-square
             data-on={on || undefined}
@@ -115,7 +115,7 @@ export function CompactEditor() {
                         onClick={() => editor?.chain().focus().toggleItalic().run()}
                         title="Italic"
                     />
-                    <button
+                    <button type="button"
                         className="rte-tb-btn"
                         data-square
                         data-on={editor?.isActive("link") || undefined}
@@ -152,13 +152,13 @@ export function CompactEditor() {
                 <div className="rte-compact-footer">
                     <span className="rte-status-pill">Comment</span>
                     <span style={{ flex: 1 }} />
-                    <button
+                    <button type="button"
                         className="rte-btn rte-btn-ghost"
                         onClick={() => editor?.chain().focus().clearContent().run()}
                     >
                         Cancel
                     </button>
-                    <button className="rte-btn rte-btn-primary">
+                    <button type="button" className="rte-btn rte-btn-primary">
                         Send <Icons.send size={13} />
                     </button>
                 </div>

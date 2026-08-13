@@ -181,7 +181,7 @@ export const IframeEmbed = Node.create({
 
             (["left", "center", "right"] as const).forEach((a) => {
                 const btn = document.createElement("button");
-                btn.type = "button";
+                btn.type = "button"; // never submit a host <form>
                 btn.className = "rte-img-tb-btn";
                 btn.dataset.on = node.attrs.align === a ? "true" : "false";
                 btn.title = `Align ${a}`;
@@ -226,7 +226,7 @@ export const IframeEmbed = Node.create({
             const labelFor = (r: string) => (r === "auto" ? "Free" : r);
 
             const ratioBtn = document.createElement("button");
-            ratioBtn.type = "button";
+            ratioBtn.type = "button"; // never submit a host <form>
             ratioBtn.className = "rte-img-tb-btn rte-img-tb-text rte-iframe-ratio-trigger";
             ratioBtn.title = "Aspect ratio";
             ratioBtn.innerHTML =
@@ -254,7 +254,7 @@ export const IframeEmbed = Node.create({
 
             ratioPresets.forEach((p) => {
                 const item = document.createElement("button");
-                item.type = "button";
+                item.type = "button"; // never submit a host <form>
                 item.className = "rte-iframe-ratio-item";
                 item.dataset.value = p.value;
                 item.innerHTML =
@@ -405,7 +405,7 @@ export const IframeEmbed = Node.create({
             toolbar.appendChild(sep2);
 
             const delBtn = document.createElement("button");
-            delBtn.type = "button";
+            delBtn.type = "button"; // never submit a host <form>
             delBtn.className = "rte-img-tb-btn rte-img-tb-danger";
             delBtn.title = "Delete embed";
             delBtn.innerHTML =

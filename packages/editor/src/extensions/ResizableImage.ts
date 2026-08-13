@@ -106,7 +106,7 @@ export const ResizableImage = Image.extend({
             toolbar.addEventListener("mousedown", (e) => e.stopPropagation());
             (["left", "center", "right"] as const).forEach((a) => {
                 const btn = document.createElement("button");
-                btn.type = "button";
+                btn.type = "button"; // never submit a host <form>
                 btn.className = "rte-img-tb-btn";
                 btn.dataset.on = node.attrs.align === a ? "true" : "false";
                 btn.title = `Align ${a}`;
@@ -130,7 +130,7 @@ export const ResizableImage = Image.extend({
             sep.className = "rte-img-tb-sep";
             toolbar.appendChild(sep);
             const delBtn = document.createElement("button");
-            delBtn.type = "button";
+            delBtn.type = "button"; // never submit a host <form>
             delBtn.className = "rte-img-tb-btn rte-img-tb-danger";
             delBtn.title = "Delete image";
             delBtn.innerHTML =

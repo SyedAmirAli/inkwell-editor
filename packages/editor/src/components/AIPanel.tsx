@@ -90,8 +90,8 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
   if (collapsed) {
     return (
       <aside className="rte-ai-rail" onClick={() => setCollapsed(false)} aria-label="AI Chat (collapsed)">
-        <button className="rte-ai-rail-btn" title="Expand AI Chat"><Icons.sparkle size={16}/></button>
-        <button className="rte-ai-rail-btn" title="History"><Icons.history size={15}/></button>
+        <button type="button" className="rte-ai-rail-btn" title="Expand AI Chat"><Icons.sparkle size={16}/></button>
+        <button type="button" className="rte-ai-rail-btn" title="History"><Icons.history size={15}/></button>
       </aside>
     );
   }
@@ -124,12 +124,12 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
       <header className="rte-ai-head">
         <span className="rte-ai-title">AI Chat</span>
         <span className="rte-ai-acts">
-          <button className="rte-ai-text" onClick={() => setMessages([])} title="New chat">
+          <button type="button" className="rte-ai-text" onClick={() => setMessages([])} title="New chat">
             <Icons.plus size={13}/> New chat
           </button>
-          <button title="History"><Icons.history size={14}/></button>
-          <button title="Collapse" onClick={() => setCollapsed(true)}><Icons.collapseRight size={14}/></button>
-          <button title="Close" onClick={onClose}><Icons.close size={14}/></button>
+          <button type="button" title="History"><Icons.history size={14}/></button>
+          <button type="button" title="Collapse" onClick={() => setCollapsed(true)}><Icons.collapseRight size={14}/></button>
+          <button type="button" title="Close" onClick={onClose}><Icons.close size={14}/></button>
         </span>
       </header>
 
@@ -147,7 +147,7 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
             <p style={{ color: "var(--fg-muted)" }}>Ask a question to get started.</p>
             <div className="rte-ai-suggestions">
               {SUGGESTIONS.map((s) => (
-                <button key={s} onClick={() => handleSend(s)}>{s}</button>
+                <button type="button" key={s} onClick={() => handleSend(s)}>{s}</button>
               ))}
             </div>
           </>
@@ -218,11 +218,11 @@ export function AIPanel({ open, onClose, editor }: AIPanelProps) {
           />
         </div>
         <div className="rte-ai-actions">
-          <button title="Add context"><Icons.plus size={13}/></button>
-          <button title="Web search"><Icons.translate size={13}/></button>
+          <button type="button" title="Add context"><Icons.plus size={13}/></button>
+          <button type="button" title="Web search"><Icons.translate size={13}/></button>
           <span className="rte-ai-mode">Auto <Icons.chevronDown size={11}/></span>
           <span style={{ flex: 1 }} />
-          <button
+          <button type="button"
             className="rte-ai-send"
             title="Send (↵)"
             onClick={() => handleSend()}

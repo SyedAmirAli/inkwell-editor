@@ -114,7 +114,7 @@ export function TablePicker({ editor, triggerRef, open, onClose }: TablePickerPr
             <div className="rte-table-picker-divider" />
 
             <div className="rte-table-picker-row">
-                <button
+                <button type="button"
                     className="rte-table-picker-quick"
                     onMouseDown={(e) => {
                         e.preventDefault();
@@ -124,7 +124,7 @@ export function TablePicker({ editor, triggerRef, open, onClose }: TablePickerPr
                 >
                     <Icons.table size={13} /> Quick 3 × 3
                 </button>
-                <button
+                <button type="button"
                     className="rte-table-picker-quick"
                     onMouseDown={(e) => {
                         e.preventDefault();

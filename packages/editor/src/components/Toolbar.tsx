@@ -591,7 +591,7 @@ export function Toolbar({
         title: string;
         disabled?: boolean;
     }) => (
-        <button
+        <button type="button"
             className="rte-tb-btn"
             data-on={on || undefined}
             onClick={onClick}
@@ -639,7 +639,7 @@ export function Toolbar({
 
                 {/* Block type — shows current block name, re-renders on selection change */}
                 <div ref={blockRef} style={{ position: "relative" }}>
-                    <button className="rte-tb-pill" onClick={() => setShowBlockMenu((v) => !v)}>
+                    <button type="button" className="rte-tb-pill" onClick={() => setShowBlockMenu((v) => !v)}>
                         <span>{s.activeBlock}</span>
                         <Icons.chevronDown size={12} />
                     </button>
@@ -650,7 +650,7 @@ export function Toolbar({
                         style={{ minWidth: 160 }}
                     >
                         {BLOCK_TYPES.map((b) => (
-                            <button
+                            <button type="button"
                                 key={b.label}
                                 className="rte-mi"
                                 data-on={b.active(editor) || undefined}
@@ -669,19 +669,19 @@ export function Toolbar({
 
                 {/* Font size — reflects selection, steps on click */}
                 <span className="rte-tb-fontsize" role="group" aria-label="Font size">
-                    <button onClick={() => stepFontSize(-1)} aria-label="Decrease font size">
+                    <button type="button" onClick={() => stepFontSize(-1)} aria-label="Decrease font size">
                         <Icons.minus size={13} />
                     </button>
                     <span style={{ minWidth: 28, textAlign: "center" }}>
                         {fontSizeLabel}
                         <small>px</small>
                     </span>
-                    <button onClick={() => stepFontSize(+1)} aria-label="Increase font size">
+                    <button type="button" onClick={() => stepFontSize(+1)} aria-label="Increase font size">
                         <Icons.plus size={13} />
                     </button>
                 </span>
                 <div ref={fontRef} style={{ position: "relative" }}>
-                    <button
+                    <button type="button"
                         className="rte-tb-pill rte-tb-font"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => setShowFontMenu((v) => !v)}
@@ -944,7 +944,7 @@ export function Toolbar({
                 <Div />
 
                 {/* Insert */}
-                <button
+                <button type="button"
                     className="rte-tb-btn"
                     data-on={s.isLink || undefined}
                     title="Insert link (⌘ K)"
@@ -956,7 +956,7 @@ export function Toolbar({
                 </button>
                 <Btn icon={<Icons.image />} title="Insert image" onClick={insertImage} />
                 <Btn icon={<Icons.embed />} title="Embed iframe / video" onClick={insertIframe} />
-                <button
+                <button type="button"
                     ref={tableBtnRef}
                     className="rte-tb-btn"
                     data-on={showTablePicker || undefined}

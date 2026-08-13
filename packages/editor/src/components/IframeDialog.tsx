@@ -156,10 +156,10 @@ export function IframeDialog({ open, onClose, onInsert }: IframeDialogProps) {
                 </h3>
 
                 <div className="rte-img-tabs" role="tablist" style={{ marginBottom: 12 }}>
-                    <button data-on={tab === "url" || undefined} onClick={() => setTab("url")}>
+                    <button type="button" data-on={tab === "url" || undefined} onClick={() => setTab("url")}>
                         <Icons.link size={13} /> By URL
                     </button>
-                    <button data-on={tab === "code" || undefined} onClick={() => setTab("code")}>
+                    <button type="button" data-on={tab === "code" || undefined} onClick={() => setTab("code")}>
                         <Icons.source size={13} /> Embed code
                     </button>
                 </div>
@@ -215,7 +215,7 @@ export function IframeDialog({ open, onClose, onInsert }: IframeDialogProps) {
                 <label className="rte-link-label">Aspect ratio</label>
                 <div className="rte-img-tabs" role="radiogroup" style={{ marginBottom: 16 }}>
                     {(["16:9", "4:3", "1:1", "auto"] as const).map((r) => (
-                        <button key={r} data-on={ratio === r || undefined} onClick={() => setRatio(r)}>
+                        <button type="button" key={r} data-on={ratio === r || undefined} onClick={() => setRatio(r)}>
                             {r}
                         </button>
                     ))}
@@ -224,10 +224,10 @@ export function IframeDialog({ open, onClose, onInsert }: IframeDialogProps) {
                 {error && <div className="rte-img-error" style={{ marginBottom: 12 }}>{error}</div>}
 
                 <div className="rte-link-dialog-actions">
-                    <button className="rte-btn rte-btn-ghost" onClick={onClose}>
+                    <button type="button" className="rte-btn rte-btn-ghost" onClick={onClose}>
                         Cancel
                     </button>
-                    <button className="rte-btn rte-btn-primary" onClick={apply}>
+                    <button type="button" className="rte-btn rte-btn-primary" onClick={apply}>
                         Embed
                     </button>
                 </div>

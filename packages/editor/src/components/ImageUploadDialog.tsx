@@ -130,13 +130,13 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                     <>
                         <header className="rte-img-modal-head">
                             <h3>Insert image</h3>
-                            <button className="rte-img-close" onClick={onClose} aria-label="Close">
+                            <button type="button" className="rte-img-close" onClick={onClose} aria-label="Close">
                                 <Icons.close size={16} />
                             </button>
                         </header>
 
                         <div className="rte-img-tabs" role="tablist">
-                            <button
+                            <button type="button"
                                 role="tab"
                                 aria-selected={tab === "upload"}
                                 data-on={tab === "upload" || undefined}
@@ -144,7 +144,7 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                             >
                                 <Icons.upload size={14} /> Upload
                             </button>
-                            <button
+                            <button type="button"
                                 role="tab"
                                 aria-selected={tab === "url"}
                                 data-on={tab === "url" || undefined}
@@ -197,7 +197,7 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                                         }}
                                         autoFocus
                                     />
-                                    <button
+                                    <button type="button"
                                         className="rte-btn rte-btn-primary"
                                         onClick={onUrlLoad}
                                         disabled={!url.trim() || loading}
@@ -226,7 +226,7 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
 
                         <footer className="rte-img-modal-foot">
                             {previewSrc && (
-                                <button
+                                <button type="button"
                                     className="rte-btn rte-btn-ghost"
                                     onClick={() => {
                                         setPreviewSrc(null);
@@ -237,17 +237,17 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                                     Choose another
                                 </button>
                             )}
-                            <button className="rte-btn rte-btn-ghost rte-btn-danger" onClick={onClose}>
+                            <button type="button" className="rte-btn rte-btn-ghost rte-btn-danger" onClick={onClose}>
                                 Cancel
                             </button>
-                            <button
+                            <button type="button"
                                 className="rte-btn rte-btn-success"
                                 onClick={onInsertWithoutEdit}
                                 disabled={!previewSrc}
                             >
                                 Insert as-is
                             </button>
-                            <button className="rte-btn rte-btn-primary" onClick={onEdit} disabled={!previewSrc}>
+                            <button type="button" className="rte-btn rte-btn-primary" onClick={onEdit} disabled={!previewSrc}>
                                 Edit image
                             </button>
                         </footer>

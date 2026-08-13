@@ -621,21 +621,21 @@ export function TableControls({ editor }: { editor: Editor }) {
                     left: tableRect.left + sX + tableRect.width / 2 + toolbarOffset.x,
                 }}
             >
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Insert row above"
                     onMouseDown={run(() => editor.chain().focus().addRowBefore().run())}
                 >
                     <TblRowAbove />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Insert row below"
                     onMouseDown={run(() => editor.chain().focus().addRowAfter().run())}
                 >
                     <TblRowBelow />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn rte-tt-danger"
                     title="Delete row"
                     onMouseDown={run(() => editor.chain().focus().deleteRow().run())}
@@ -643,21 +643,21 @@ export function TableControls({ editor }: { editor: Editor }) {
                     <TblRowDel />
                 </button>
                 <span className="rte-tt-sep" />
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Insert column left"
                     onMouseDown={run(() => editor.chain().focus().addColumnBefore().run())}
                 >
                     <TblColBefore />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Insert column right"
                     onMouseDown={run(() => editor.chain().focus().addColumnAfter().run())}
                 >
                     <TblColAfter />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn rte-tt-danger"
                     title="Delete column"
                     onMouseDown={run(() => editor.chain().focus().deleteColumn().run())}
@@ -665,14 +665,14 @@ export function TableControls({ editor }: { editor: Editor }) {
                     <TblColDel />
                 </button>
                 <span className="rte-tt-sep" />
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Merge selected cells"
                     onMouseDown={run(() => editor.chain().focus().mergeCells().run())}
                 >
                     <TblMerge />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Split cell"
                     onMouseDown={run(() => editor.chain().focus().splitCell().run())}
@@ -680,14 +680,14 @@ export function TableControls({ editor }: { editor: Editor }) {
                     <TblSplit />
                 </button>
                 <span className="rte-tt-sep" />
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Toggle header row"
                     onMouseDown={run(() => editor.chain().focus().toggleHeaderRow().run())}
                 >
                     <TblHeaderRow />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Toggle header column"
                     onMouseDown={run(() => editor.chain().focus().toggleHeaderColumn().run())}
@@ -695,7 +695,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                     <TblHeaderCol />
                 </button>
                 <span className="rte-tt-sep" />
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     data-on={tableAttrs.tableAlign === "left" || undefined}
                     title="Float table left so text wraps on the right"
@@ -703,7 +703,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                 >
                     <Icons.alignLeft size={14} />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     data-on={tableAttrs.tableAlign === "center" || undefined}
                     title="Center table"
@@ -711,7 +711,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                 >
                     <Icons.alignCenter size={14} />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     data-on={tableAttrs.tableAlign === "right" || undefined}
                     title="Float table right so text wraps on the left"
@@ -719,7 +719,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                 >
                     <Icons.alignRight size={14} />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     data-on={tableAttrs.tableAlign === "full" || undefined}
                     title="Make table full width"
@@ -728,14 +728,14 @@ export function TableControls({ editor }: { editor: Editor }) {
                     <Icons.fitWidth size={14} />
                 </button>
                 <span className="rte-tt-sep" />
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Move table up"
                     onMouseDown={run(() => moveTable("up"))}
                 >
                     <Icons.chevronUp size={14} />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Move table down"
                     onMouseDown={run(() => moveTable("down"))}
@@ -743,7 +743,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                     <Icons.chevronDown size={14} />
                 </button>
                 <span className="rte-tt-sep" />
-                <button
+                <button type="button"
                     className="rte-tt-btn"
                     title="Drag to move this toolbar — or click to select the table"
                     style={{ cursor: "grab", touchAction: "none" }}
@@ -751,7 +751,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                 >
                     <Icons.drag size={14} />
                 </button>
-                <button
+                <button type="button"
                     className="rte-tt-btn rte-tt-danger-strong"
                     title="Delete table"
                     onMouseDown={run(() => editor.chain().focus().deleteTable().run())}
@@ -761,7 +761,7 @@ export function TableControls({ editor }: { editor: Editor }) {
             </div>
 
             {/* ── Drag handle (top-left corner badge) ───────────────────── */}
-            <button
+            <button type="button"
                 className="rte-table-drag-handle"
                 style={{
                     top: tableRect.top + sY - 24,
@@ -785,7 +785,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                 primary affordance for resizing table width. Sits outside the
                 table boundary so it doesn't fight ProseMirror's column-resize
                 hot zone at the right edge of the last cell. */}
-            <button
+            <button type="button"
                 className="rte-table-edge-handle rte-table-edge-handle--right"
                 style={{
                     top: tableRect.top + sY,
@@ -798,7 +798,7 @@ export function TableControls({ editor }: { editor: Editor }) {
 
             {/* Bottom-right corner: same width-resize action, positioned just
                 outside the table for a clear diagonal grab target. */}
-            <button
+            <button type="button"
                 className="rte-table-resize-handle"
                 style={{
                     top: tableRect.bottom + sY + 2,
@@ -823,7 +823,7 @@ export function TableControls({ editor }: { editor: Editor }) {
                     onMouseEnter={() => setHoveredRow(idx)}
                     onMouseLeave={() => setHoveredRow((h) => (h === idx ? null : h))}
                 >
-                    <button
+                    <button type="button"
                         className="rte-table-rc-label"
                         title={`Row ${idx + 1} — click to select`}
                         onMouseDown={runInCell(idx, 0, () => {
@@ -832,28 +832,28 @@ export function TableControls({ editor }: { editor: Editor }) {
                     >
                         {idx + 1}
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-rc-plus rte-table-rc-plus--above"
                         title="Insert row above"
                         onMouseDown={runInCell(idx, 0, () => editor.chain().focus().addRowBefore().run())}
                     >
                         <Icons.plus size={10} />
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-rc-plus rte-table-rc-plus--below"
                         title="Insert row below"
                         onMouseDown={runInCell(idx, 0, () => editor.chain().focus().addRowAfter().run())}
                     >
                         <Icons.plus size={10} />
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-rc-del"
                         title="Delete row"
                         onMouseDown={runInCell(idx, 0, () => editor.chain().focus().deleteRow().run())}
                     >
                         <Icons.trash size={10} />
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-row-resize"
                         title="Resize row height"
                         onPointerDown={(e) => resizeRow(idx, e)}
@@ -875,28 +875,28 @@ export function TableControls({ editor }: { editor: Editor }) {
                     onMouseEnter={() => setHoveredCol(idx)}
                     onMouseLeave={() => setHoveredCol((h) => (h === idx ? null : h))}
                 >
-                    <button
+                    <button type="button"
                         className="rte-table-rc-label"
                         title={`Column ${colLabel(idx)} — click to select`}
                         onMouseDown={runInCell(0, idx, () => {})}
                     >
                         {colLabel(idx)}
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-rc-plus rte-table-rc-plus--left"
                         title="Insert column to the left"
                         onMouseDown={runInCell(0, idx, () => editor.chain().focus().addColumnBefore().run())}
                     >
                         <Icons.plus size={10} />
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-rc-plus rte-table-rc-plus--right"
                         title="Insert column to the right"
                         onMouseDown={runInCell(0, idx, () => editor.chain().focus().addColumnAfter().run())}
                     >
                         <Icons.plus size={10} />
                     </button>
-                    <button
+                    <button type="button"
                         className="rte-table-rc-del"
                         title="Delete column"
                         onMouseDown={runInCell(0, idx, () => editor.chain().focus().deleteColumn().run())}

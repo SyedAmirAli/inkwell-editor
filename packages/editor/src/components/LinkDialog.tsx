@@ -141,12 +141,12 @@ export function LinkDialog({
 
         <div className="rte-link-dialog-actions">
           {hasLink && (
-            <button className="rte-btn rte-btn-ghost" onClick={onRemove}>
+            <button type="button" className="rte-btn rte-btn-ghost" onClick={onRemove}>
               Remove link
             </button>
           )}
-          <button className="rte-btn rte-btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="rte-btn rte-btn-primary" onClick={apply}>Apply</button>
+          <button type="button" className="rte-btn rte-btn-ghost" onClick={onClose}>Cancel</button>
+          <button type="button" className="rte-btn rte-btn-primary" onClick={apply}>Apply</button>
         </div>
       </div>
     </div>,

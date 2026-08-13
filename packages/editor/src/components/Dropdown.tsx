@@ -69,7 +69,7 @@ interface MenuItemProps {
 
 export function MenuItem({ icon, label, shortcut, on, sub, onClick, disabled }: MenuItemProps) {
     return (
-        <button
+        <button type="button"
             style={{ margin: "2px 0" }}
             className="rte-mi"
             data-on={on || undefined}

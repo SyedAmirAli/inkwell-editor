@@ -103,7 +103,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             style={{ position: "absolute", top: pos.top, left: pos.left, transform: "translateX(-50%)", zIndex: 50 }}
             onMouseDown={(e) => e.preventDefault()} // keep editor focused
         >
-            <button
+            <button type="button"
             className="rte-float-improve"
             onMouseDown={(e) => {
                 e.preventDefault();
@@ -113,7 +113,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
                 <Icons.sparkle size={13} /> Improve
             </button>
             <span className="rte-float-div" />
-            <button
+            <button type="button"
                 className="rte-float-btn"
                 data-on={editor.isActive("bold") || undefined}
                 onMouseDown={(e) => {
@@ -124,7 +124,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.bold />
             </button>
-            <button
+            <button type="button"
                 className="rte-float-btn"
                 data-on={editor.isActive("italic") || undefined}
                 onMouseDown={(e) => {
@@ -135,7 +135,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.italic />
             </button>
-            <button
+            <button type="button"
                 className="rte-float-btn"
                 data-on={editor.isActive("underline") || undefined}
                 onMouseDown={(e) => {
@@ -146,7 +146,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.underline />
             </button>
-            <button
+            <button type="button"
                 className="rte-float-btn"
                 data-on={editor.isActive("strike") || undefined}
                 onMouseDown={(e) => {
@@ -157,7 +157,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.strike />
             </button>
-            <button
+            <button type="button"
                 className="rte-float-btn"
                 data-on={editor.isActive("link") || undefined}
                 onMouseDown={(e) => {
@@ -171,7 +171,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.link size={15} />
             </button>
-            <button
+            <button type="button"
                 className="rte-float-btn"
                 data-on={editor.isActive("highlight") || undefined}
                 onMouseDown={(e) => {
@@ -182,7 +182,7 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.highlight size={15} />
             </button>
-            <button className="rte-float-btn" title="More" onMouseDown={(e) => e.preventDefault()}>
+            <button type="button" className="rte-float-btn" title="More" onMouseDown={(e) => e.preventDefault()}>
                 <Icons.ellipsis size={15} />
             </button>
         </div>,
@@ -245,7 +245,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             }}
             onMouseDown={(e) => e.preventDefault()}
         >
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Heading 1"
@@ -257,7 +257,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             >
                 H1
             </button>
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Heading 2"
@@ -269,7 +269,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             >
                 H2
             </button>
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Bullet list"
@@ -280,7 +280,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.bulletList size={14} />
             </button>
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Ordered list"
@@ -291,7 +291,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.orderedList />
             </button>
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Task list"
@@ -302,7 +302,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.checklist size={14} />
             </button>
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Code block"
@@ -313,7 +313,7 @@ function FloatingMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.source size={14} />
             </button>
-            <button
+            <button type="button"
                 className="rte-tb-btn"
                 data-square
                 title="Blockquote"

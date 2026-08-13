@@ -33,7 +33,7 @@ export function CommentPanel({ open, onClose, editor, quote, onCreate, comments 
             <header className="rte-ai-head">
                 <span className="rte-ai-title">Comment</span>
                 <span className="rte-ai-acts">
-                    <button title="Close" onClick={onClose}>
+                    <button type="button" title="Close" onClick={onClose}>
                         <Icons.close size={14} />
                     </button>
                 </span>
@@ -58,7 +58,7 @@ export function CommentPanel({ open, onClose, editor, quote, onCreate, comments 
                     rows={5}
                 />
 
-                <button
+                <button type="button"
                     className="rte-comment-submit"
                     onClick={() => {
                         const trimmed = note.trim();

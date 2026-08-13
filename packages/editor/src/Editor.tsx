@@ -119,6 +119,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     const [commentQuote, setCommentQuote] = useState("");
     const [comments, setComments] = useState<CommentItem[]>([]);
     const editorRef = useRef<TiptapEditor | null>(null);
+    const rootRef = useRef<HTMLDivElement>(null);
 
     const styles = useMemo(() => {
         return {
@@ -151,6 +152,24 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         }),
         []
     );
+
+    /**
+     * Safety net for embedding inside a <form>. A <button> with no `type`
+     * defaults to `type="submit"`, so any editor control would submit the host
+     * form. Every button in the package sets `type="button"` explicitly; this
+     * capture-phase listener fixes the element before the click's default
+     * action runs, so a control added later can never reintroduce the bug.
+     */
+    useEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+        const onClickCapture = (e: MouseEvent) => {
+            const button = (e.target as HTMLElement | null)?.closest?.("button");
+            if (button && !button.hasAttribute("type")) button.setAttribute("type", "button");
+        };
+        root.addEventListener("click", onClickCapture, true);
+        return () => root.removeEventListener("click", onClickCapture, true);
+    }, []);
 
     useEffect(() => {
         applyTheme(theme, custom);
@@ -217,6 +236,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
 
     return (
         <div
+            ref={rootRef}
             className={className ? `rte-app-page ${className}` : "rte-app-page"}
             style={styles}
             data-screen-label="Inkwell editor"
@@ -245,7 +265,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
                                     onChange={(e) => setCustom((c) => ({ ...c, bg: e.target.value }))}
                                 />
                             </label>
-                            <button className="rte-btn rte-btn-ghost" onClick={() => setTheme("light")}>
+                            <button type="button" className="rte-btn rte-btn-ghost" onClick={() => setTheme("light")}>
                                 Done
                             </button>
                         </div>
@@ -318,7 +338,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
 function ModeRail({ mode, onMode }: { mode: Mode; onMode: (m: Mode) => void }) {
     return (
         <div className="rte-mode-rail" role="group" aria-label="Canvas mode">
-            <button
+            <button type="button"
                 data-on={mode === "compact" || undefined}
                 onClick={() => onMode("compact")}
                 title="Compact"
@@ -326,7 +346,7 @@ function ModeRail({ mode, onMode }: { mode: Mode; onMode: (m: Mode) => void }) {
             >
                 <Icons.compact size={15} />
             </button>
-            <button
+            <button type="button"
                 data-on={mode === "document" || undefined}
                 onClick={() => onMode("document")}
                 title="Document"
@@ -334,7 +354,7 @@ function ModeRail({ mode, onMode }: { mode: Mode; onMode: (m: Mode) => void }) {
             >
                 <Icons.page size={15} />
             </button>
-            <button
+            <button type="button"
                 data-on={mode === "fullscreen" || undefined}
                 onClick={() => onMode("fullscreen")}
                 title="Fullscreen (Esc to exit)"

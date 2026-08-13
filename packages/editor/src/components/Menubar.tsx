@@ -54,7 +54,7 @@ export function Menubar({ editor, docName, mode, onMode, theme, onTheme, showSou
                             if (el) wrapRefs.current.set(m, el);
                         }}
                     >
-                        <button
+                        <button type="button"
                             className="rte-menubar-item"
                             data-open={openMenu === m || undefined}
                             onClick={() => toggle(m)}
@@ -109,7 +109,7 @@ function ThemeSwitcher({ theme, onTheme }: { theme: Theme; onTheme: (t: Theme) =
     return (
         <div className="rte-theme-seg" role="tablist" aria-label="Theme">
             {opts.map((o) => (
-                <button key={o.id} data-on={theme === o.id || undefined} onClick={() => onTheme(o.id)} title={o.label}>
+                <button type="button" key={o.id} data-on={theme === o.id || undefined} onClick={() => onTheme(o.id)} title={o.label}>
                     {o.icon}
                 </button>
             ))}
