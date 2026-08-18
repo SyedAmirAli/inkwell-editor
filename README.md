@@ -45,6 +45,7 @@ A premium, monochrome **rich text editor for React** — Tiptap-powered, with a 
 - **Four themes** — `light`, `dark`, `system` (follows OS), `custom` (pick your own ink + canvas color).
 - **Pluggable fonts** — pass `defaultFonts` and the editor injects the stylesheets and merges them into the picker.
 - **Floating selection bubble menu** with bold/italic/underline/strike/link/highlight + an *Improve* button that pushes the selection straight into the AI panel.
+- **Link dialog** with title, target, `rel` chips, and an *Appearance* control to turn the underline off per link. Link underlines always follow the link's own text colour.
 - **Slash menu**, **floating block menu**, **resizable images**, **iframe embeds** with aspect-ratio control, **task lists**, **find & replace**, **source view**, **comment panel**.
 - **Self-contained HTML export** — `getInlinedHTML(html)` returns a clipboard/email-ready snippet with every style inlined.
 - **Tree-shakable** ESM + CJS bundles, rolled-up TypeScript declarations, externalized React and Tiptap.

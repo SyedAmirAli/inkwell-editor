@@ -18,6 +18,16 @@ const TitleLink = Link.extend({
                 parseHTML: (el) => el.getAttribute("title") || null,
                 renderHTML: (attrs) => (attrs.title ? { title: attrs.title } : {}),
             },
+            /**
+             * Per-link underline toggle. Underlined is the default, so only the
+             * opt-out is serialized — existing documents keep their appearance
+             * and the attribute round-trips through `data-underline`.
+             */
+            underline: {
+                default: true,
+                parseHTML: (el) => el.getAttribute("data-underline") !== "none",
+                renderHTML: (attrs) => (attrs.underline === false ? { "data-underline": "none" } : {}),
+            },
         };
     },
 });

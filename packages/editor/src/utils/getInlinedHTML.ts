@@ -17,7 +17,7 @@ const TAG_STYLES: Record<string, string> = {
     i: "font-style:italic",
     u: "text-decoration:underline;text-underline-offset:2px",
     s: "text-decoration:line-through",
-    a: "color:#0f172a;text-decoration:underline;text-underline-offset:2px",
+    a: "color:inherit;text-decoration:underline;text-decoration-color:currentColor;text-underline-offset:2px",
     code: "font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:0.92em;padding:0.1em 0.35em;border-radius:4px;background:#f1f5f9;color:#0f172a",
     pre: "box-sizing:border-box;margin:1em 0;padding:16px;max-width:100%;overflow-x:auto;border:1px solid #d7dee8;border-radius:8px;background:#f8fafc;color:#0f172a;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:13px;line-height:1.55;white-space:pre",
     blockquote: "margin:1em 0;padding:0.1em 0 0.1em 1em;border-left:3px solid #94a3b8;color:#475569;font-family:Georgia,'Times New Roman',serif;font-style:italic",
@@ -104,6 +104,32 @@ function getElementStyle(el: Element): string {
             "display:flex;gap:8px;align-items:flex-start;margin:0.35em 0;padding-left:0;list-style:none;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.55;color:#1f2933",
             checked ? "color:#64748b;text-decoration:line-through" : "",
         );
+    }
+
+    if (tag === "a") {
+        // Opt-out from the link dialog.
+        if (el.getAttribute("data-underline") === "none") {
+            return mergeStyles(base, "text-decoration:none");
+        }
+        // A decoration is painted by the element that declares it, in that
+        // element's own colour. When a coloured span sits inside the link, the
+        // anchor's underline would render in the anchor's colour instead of the
+        // text's — so hand the underline to the span (see the `span` branch).
+        if (el.querySelector('span[style*="color"]')) {
+            return mergeStyles(base, "text-decoration:none");
+        }
+        return base;
+    }
+
+    if (tag === "span" && /(^|;)\s*color\s*:/.test((el as HTMLElement).getAttribute("style") ?? "")) {
+        const link = el.closest("a");
+        if (link && link.getAttribute("data-underline") !== "none") {
+            return mergeStyles(
+                base,
+                "text-decoration:underline;text-decoration-color:currentColor;text-underline-offset:2px",
+            );
+        }
+        return base;
     }
 
     if (tag === "input" && (el as HTMLInputElement).type === "checkbox") {

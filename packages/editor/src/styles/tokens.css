@@ -383,8 +383,37 @@
 .rte-content a {
     color: inherit;
     text-decoration: underline;
+    /* Without this the decoration can keep a stale colour inherited from a
+       host stylesheet instead of following the link's own text colour. */
+    text-decoration-color: currentColor;
     text-underline-offset: 2px;
     text-decoration-thickness: from-font;
+}
+
+/* A text decoration is painted by the element that DECLARES it, using that
+   element's own colour — not the colour of a descendant. Tiptap nests the
+   colour mark inside the link (`<a><span style="color:…">`), so an underline
+   declared on the <a> was always drawn in the anchor's inherited colour
+   (black) no matter what colour the user picked for the text. Hand the
+   underline to the coloured span so the two can never disagree.
+
+   `span[style*="color"]` deliberately excludes highlights, which Tiptap
+   renders as <mark> rather than <span>. */
+.rte-content a:has(span[style*="color"]) {
+    text-decoration: none;
+}
+.rte-content a span[style*="color"] {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 2px;
+    text-decoration-thickness: from-font;
+}
+
+/* Per-link opt-out, set from the link dialog's "Appearance" control. Also
+   suppresses the delegated underline above. */
+.rte-content a[data-underline="none"],
+.rte-content a[data-underline="none"] span[style*="color"] {
+    text-decoration: none;
 }
 .rte-content code,
 .rte-content kbd,

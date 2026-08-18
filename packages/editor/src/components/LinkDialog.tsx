@@ -18,8 +18,15 @@ interface LinkDialogProps {
   initialTitle?: string;
   initialTarget?: string | null;
   initialRel?: string | null;
+  initialUnderline?: boolean;
   hasLink?: boolean;
-  onApply: (href: string, title: string, target: string | null, rel: string | null) => void;
+  onApply: (
+    href: string,
+    title: string,
+    target: string | null,
+    rel: string | null,
+    underline: boolean
+  ) => void;
   onRemove: () => void;
   onClose: () => void;
 }
@@ -30,6 +37,7 @@ export function LinkDialog({
   initialTitle = "",
   initialTarget = null,
   initialRel = null,
+  initialUnderline = true,
   hasLink,
   onApply,
   onRemove,
@@ -39,6 +47,7 @@ export function LinkDialog({
   const [title, setTitle] = useState(initialTitle);
   const [newTab, setNewTab] = useState(initialTarget === "_blank");
   const [rels,  setRels]  = useState<string[]>(parseRel(initialRel));
+  const [underline, setUnderline] = useState(initialUnderline);
   const hrefRef = useRef<HTMLInputElement>(null);
 
   // Sync fields when dialog is (re-)opened
@@ -48,6 +57,7 @@ export function LinkDialog({
       setTitle(initialTitle);
       setNewTab(initialTarget === "_blank");
       setRels(parseRel(initialRel));
+      setUnderline(initialUnderline);
       setTimeout(() => hrefRef.current?.focus(), 40);
     }
   }, [open]);
@@ -68,7 +78,7 @@ export function LinkDialog({
     const relValue = REL_OPTIONS.filter((o) => rels.includes(o.value))
       .map((o) => o.value)
       .join(" ");
-    onApply(href.trim(), title.trim(), newTab ? "_blank" : null, relValue || null);
+    onApply(href.trim(), title.trim(), newTab ? "_blank" : null, relValue || null, underline);
   };
 
   const onKey = (e: React.KeyboardEvent) => {
@@ -120,6 +130,26 @@ export function LinkDialog({
             onClick={() => setTarget(true)}
           >
             New tab
+          </button>
+        </div>
+
+        <label className="rte-link-label">Appearance</label>
+        <div className="rte-link-seg" role="group">
+          <button
+            type="button"
+            className={`rte-link-seg-btn${underline ? " is-on" : ""}`}
+            aria-pressed={underline}
+            onClick={() => setUnderline(true)}
+          >
+            Underlined
+          </button>
+          <button
+            type="button"
+            className={`rte-link-seg-btn${!underline ? " is-on" : ""}`}
+            aria-pressed={!underline}
+            onClick={() => setUnderline(false)}
+          >
+            No underline
           </button>
         </div>
 

@@ -356,6 +356,7 @@ export function Toolbar({
     const [linkTitle, setLinkTitle] = useState("");
     const [linkTarget, setLinkTarget] = useState<string | null>(null);
     const [linkRel, setLinkRel] = useState<string | null>(null);
+    const [linkUnderline, setLinkUnderline] = useState(true);
     const tableBtnRef = useRef<HTMLButtonElement>(null);
 
     const blockRef = useRef<HTMLDivElement>(null);
@@ -463,10 +464,17 @@ export function Toolbar({
         setLinkTitle(attrs.title || selectedText || "");
         setLinkTarget(attrs.target ?? null);
         setLinkRel(attrs.rel ?? null);
+        setLinkUnderline(attrs.underline !== false);
         setShowLinkDialog(true);
     };
 
-    const handleLinkApply = (href: string, title: string, target: string | null, rel: string | null) => {
+    const handleLinkApply = (
+        href: string,
+        title: string,
+        target: string | null,
+        rel: string | null,
+        underline: boolean
+    ) => {
         if (!editor) return;
         const range = savedRange.current;
         savedRange.current = null;
@@ -476,7 +484,7 @@ export function Toolbar({
         } else {
             chain
                 .extendMarkRange("link")
-                .setLink({ href, title: title || null, target, rel })
+                .setLink({ href, title: title || null, target, rel, underline })
                 .run();
         }
         setShowLinkDialog(false);
@@ -1063,6 +1071,7 @@ export function Toolbar({
                 initialTitle={linkTitle}
                 initialTarget={linkTarget}
                 initialRel={linkRel}
+                initialUnderline={linkUnderline}
                 hasLink={editor?.isActive("link")}
                 onApply={handleLinkApply}
                 onRemove={handleLinkRemove}
