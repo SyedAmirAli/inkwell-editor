@@ -46,41 +46,91 @@ export interface EditorHandle {
 }
 
 /**
- * Typed embedding layout for `<Editor extraStyle={…} />`.
- * Each field maps to a `--rte-*` custom property on the editor root.
+ * How the editor root relates to the box the host gives it.
+ *
+ * - `"fill"` (default) — the root fills its parent and owns nothing above
+ *   itself: no viewport height, no outer padding, no background. This is the
+ *   correct choice for embedding in an existing app, form, card or panel.
+ * - `"standalone"` — the editor owns the screen: full-viewport wrapper with a
+ *   padded, centred stage. For a dedicated `/editor` route or a demo page.
+ */
+export type EditorLayout = "fill" | "standalone";
+
+/**
+ * Typed layout overrides for `<Editor extraStyle={…} />`.
+ *
+ * Each group maps to one box, and each box has exactly one padding hook, so
+ * an override always wins — no mode variant or toolbar toggle can silently
+ * reintroduce padding you turned off.
+ *
+ * ```
+ * ┌ .rte-app-page ── root, standalone.* (standalone layout only) ─────┐
+ * │ ┌ .rte-shell ── frame: border + radius ───────────────────────────┐ │
+ * │ │  menubar / toolbar                                              │ │
+ * │ │ ┌ .rte-canvas ── canvas.padding = gutter around the card ──────┐ │ │
+ * │ │ │ ┌ .rte-canvas-inner ── page.inset = padding inside card ───┐ │ │ │
+ * │ │ │ │  your text                                               │ │ │ │
+ * ```
  */
 export interface EditorExtraStyleProps {
-    /** Document page card inside the canvas. */
-    page?: {
-        /** `--rte-page-min-height` — use `"0px"` when not full viewport. */
-        minHeight?: string;
-        /** `--rte-page-padding` — outer gutter around the page card. */
-        padding?: string;
-        /** `--rte-page-bg` — page surface; `"transparent"` blends with host UI. */
-        background?: string;
-        /** `--rte-page-inset` — inner padding inside the page card. */
-        inset?: string;
-    };
-    /** `--rte-height` — editor stage height (`"520px"`, `"100%"`, `calc(…)`). */
-    height?: string;
-    /** `--rte-width` — editor stage width. */
+    /** `--rte-width` — stage width. Defaults to `100%`. */
     width?: string;
-    /** `--rte-canvas-padding` — padding around the page within the canvas. */
-    canvasPadding?: string;
-    /** Fullscreen shell offset when a fixed host header sits above the editor. */
-    shell?: {
-        /** `--rte-shell-top` — e.g. `"62px"` below a 60px navbar + border. */
-        top?: string;
+    /** `--rte-height` — stage height, e.g. `"420px"` or `"100%"`. */
+    height?: string;
+    /**
+     * `--rte-min-height` — floor for the `"fill"` layout so the editor stays
+     * usable when the host parent has no resolvable height. Defaults `320px`.
+     */
+    minHeight?: string;
+    /** The scroll region between the frame and the page card. */
+    canvas?: {
+        /** `--rte-canvas-padding` — gutter around the page card. `"0px"` to remove. */
+        padding?: string;
+        /** `--rte-canvas-bg` — background behind the page card. */
+        background?: string;
     };
+    /** The document "page" card that holds the text. */
+    page?: {
+        /** `--rte-page-inset` — padding *inside* the card. */
+        inset?: string;
+        /** `--rte-page-bg` — card surface; `"transparent"` blends with host UI. */
+        background?: string;
+        /** `--rte-page-max-width` — reading column width. Default `816px`. */
+        maxWidth?: string;
+        /** `--rte-page-radius` — card corner radius. */
+        radius?: string;
+        /** `--rte-page-shadow` — card shadow; `"none"` for a flat embed. */
+        shadow?: string;
+    };
+    /** Only applied when `layout="standalone"`. Ignored in the default layout. */
+    standalone?: {
+        /** `--rte-standalone-padding` — gutter between viewport and stage. */
+        padding?: string;
+        /** `--rte-standalone-bg` — page background behind the stage. */
+        background?: string;
+        /** `--rte-standalone-min-height` — defaults to `100vh`. */
+        minHeight?: string;
+    };
+    /**
+     * @deprecated No longer needed and ignored since v2. Fullscreen now renders
+     * in the browser's top layer, so it covers the entire viewport including
+     * fixed host headers — there is nothing to offset it below.
+     */
+    shell?: { top?: string };
 }
 
 export interface EditorStyleProperties extends CSSProperties {
-    "--rte-page-min-height"?: string;
-    "--rte-page-padding"?: string;
-    "--rte-page-bg"?: string;
     "--rte-width"?: string;
     "--rte-height"?: string;
+    "--rte-min-height"?: string;
     "--rte-canvas-padding"?: string;
+    "--rte-canvas-bg"?: string;
     "--rte-page-inset"?: string;
-    "--rte-shell-top"?: string;
+    "--rte-page-bg"?: string;
+    "--rte-page-max-width"?: string;
+    "--rte-page-radius"?: string;
+    "--rte-page-shadow"?: string;
+    "--rte-standalone-padding"?: string;
+    "--rte-standalone-bg"?: string;
+    "--rte-standalone-min-height"?: string;
 }

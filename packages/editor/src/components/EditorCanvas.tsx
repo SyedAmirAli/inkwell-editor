@@ -46,6 +46,8 @@ interface EditorCanvasProps {
     onEditorReady?: (editor: Editor) => void;
     initialContent?: string;
     onChange?: (html: string) => void;
+    /** Consumer pinned the page width, so the drag-resize handles are hidden. */
+    pageWidthLocked?: boolean;
 }
 
 /* ── Custom BubbleMenu ─────────────────────────────────────────────── */
@@ -502,6 +504,7 @@ export function EditorCanvas({
     onEditorReady,
     initialContent,
     onChange,
+    pageWidthLocked,
 }: EditorCanvasProps) {
     const [sourceValue, setSourceValue] = useState("");
     const onChangeRef = useRef(onChange);
@@ -579,7 +582,9 @@ export function EditorCanvas({
         writePageWidth(mode, next);
     };
 
-    const showResizers = mode !== "compact" && !freeCanvas;
+    // When the consumer pins the page width (page.maxWidth / --rte-page-max-width)
+    // their value wins, so dragging would be a no-op — don't offer the handles.
+    const showResizers = mode !== "compact" && !freeCanvas && !pageWidthLocked;
     // Rendered via a call (not <Resizer/>) so the node keeps its identity
     // across re-renders and does not lose focus mid-drag.
     const renderResizer = (side: "left" | "right") => (
@@ -662,7 +667,7 @@ export function EditorCanvas({
                 data-mode={mode}
                 data-free={freeCanvas || undefined}
                 data-resizing={resizing || undefined}
-                style={showResizers && pageWidth ? { maxWidth: `${pageWidth}px` } : undefined}
+                style={showResizers && pageWidth ? { "--_page-width": `${pageWidth}px` } : undefined}
             >
                 {showResizers && renderResizer("left")}
                 {showResizers && renderResizer("right")}

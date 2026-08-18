@@ -3,6 +3,13 @@
 /* Minimal reset for the editor chrome — covers only what Tailwind's preflight
    used to give us. Scoped to elements inside .rte-shell so we don't touch
    consumer-owned content. */
+/* The root and stage are ancestors of .rte-shell, so they need the reset
+   explicitly — without it the root's `width: 100%` plus its own padding
+   overflows the host horizontally. Deliberately not a global `*` selector:
+   that would leak into consumer-owned content. */
+.rte-app-page,
+.rte-stage,
+.rte-fullscreen-layer,
 .rte-shell,
 .rte-shell *,
 .rte-shell *::before,

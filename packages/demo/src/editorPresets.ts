@@ -1,78 +1,66 @@
 import type { EditorExtraStyleProps } from "@syedamirali/inkwell-editor";
 
 /**
- * Offset applied to the editor shell when a fixed host header sits above it.
- * Matches the demo navbar height (60px) plus its bottom border.
+ * Presets are now *taste*, not repair work.
+ *
+ * `<Editor>` defaults to `layout="fill"`: it fills the box the host gives it
+ * and owns no viewport height, outer padding or background. So embedding
+ * needs no overrides at all — everything below is an intentional visual
+ * choice about how the document card should read inside that host.
+ *
+ * | extraStyle key         | CSS variable            |
+ * | ---------------------- | ----------------------- |
+ * | `width` / `height`     | `--rte-width` / `--rte-height` |
+ * | `minHeight`            | `--rte-min-height`      |
+ * | `canvas.padding`       | `--rte-canvas-padding`  |
+ * | `canvas.background`    | `--rte-canvas-bg`       |
+ * | `page.inset`           | `--rte-page-inset`      |
+ * | `page.background`      | `--rte-page-bg`         |
+ * | `page.maxWidth`        | `--rte-page-max-width`  |
+ * | `page.shadow`          | `--rte-page-shadow`     |
+ * | `standalone.*`         | `--rte-standalone-*`    |
  */
-export const DEMO_NAVBAR_SHELL_OFFSET = "62px";
+
+/** The demo navbar is a 60px fixed bar; `.demo-content` already offsets it. */
+export const DEMO_NAVBAR_HEIGHT = "60px";
 
 /**
- * Full-page editor tucked under the demo's fixed navbar.
- *
- * Maps to `style={{ "--rte-shell-top": "62px" }}` — prefer `extraStyle` for
- * typed, readable overrides.
+ * Full-page editor tab. Uses `layout="standalone"` so the editor centres
+ * itself in the space below the demo navbar.
  */
-export const shellBelowDemoNav: EditorExtraStyleProps = {
-    shell: { top: DEMO_NAVBAR_SHELL_OFFSET },
-    page: {
-        inset: "16px 20px",
-        padding: "0px",
-        background: "transparent",
-        minHeight: "0px",
-    },
-    // width: "100%",
-    // height: "520px",
-    // canvasPadding: "0px",
+export const standaloneBelowNav: EditorExtraStyleProps = {
+    standalone: { minHeight: `calc(100vh - ${DEMO_NAVBAR_HEIGHT})` },
 };
 
 /**
- * Embed the editor inside a form field or card.
- *
- * Drops the default full-viewport page chrome so the canvas fits a bounded
- * container. Pair with `showModeRail={false}` when the host layout should
- * lock the editor to document mode.
- *
- * CSS variable mapping (handled internally by `<Editor>`):
- *
- * | extraStyle key              | CSS variable            |
- * | --------------------------- | ----------------------- |
- * | `page.minHeight`            | `--rte-page-min-height` |
- * | `page.padding`              | `--rte-page-padding`    |
- * | `page.background`           | `--rte-page-bg`         |
- * | `page.inset`                | `--rte-page-inset`      |
- * | `width`                     | `--rte-width`           |
- * | `height`                    | `--rte-height`          |
- * | `canvasPadding`             | `--rte-canvas-padding`  |
- * | `shell.top`                 | `--rte-shell-top`       |
+ * Editor as a form field. Flattens the document card so it reads as one
+ * continuous input rather than a page floating inside a box.
  */
 export const embeddedFormEditor: EditorExtraStyleProps = {
+    height: "420px",
+    canvas: { padding: "0px" },
     page: {
-        minHeight: "0px",
-        padding: "0px",
-        background: "transparent",
         inset: "16px 20px",
+        background: "transparent",
+        maxWidth: "none",
+        shadow: "none",
+        radius: "0px",
     },
-    width: "100%",
-    height: "520px",
-    canvasPadding: "0px",
-    shell: { top: DEMO_NAVBAR_SHELL_OFFSET },
 };
 
 /**
- * Editor embedded in an app shell with its own sidebar and document header.
- * Fills the remaining viewport below the demo navbar and in-app chrome.
+ * Editor filling the main region of an app shell that has its own sidebar and
+ * document header. The host sizes it; the editor just fills that box.
  */
-export function embeddedAppEditor(shellTop: string, height: string): EditorExtraStyleProps {
+export function embeddedAppEditor(height: string): EditorExtraStyleProps {
     return {
-        page: {
-            minHeight: "0px",
-            padding: "0px",
-            background: "transparent",
-            inset: "48px 64px",
-        },
-        width: "100%",
         height,
-        canvasPadding: "0px",
-        shell: { top: shellTop },
+        canvas: { padding: "0px" },
+        page: {
+            inset: "48px 64px",
+            background: "transparent",
+            shadow: "none",
+            radius: "0px",
+        },
     };
 }

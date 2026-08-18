@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Editor } from "@syedamirali/inkwell-editor";
 
 import { FONTS, SAMPLE } from "../constants";
-import { DEMO_NAVBAR_SHELL_OFFSET, embeddedAppEditor } from "../editorPresets";
+import { DEMO_NAVBAR_HEIGHT, embeddedAppEditor } from "../editorPresets";
 
 const NAV_ITEMS = [
     { id: "docs", label: "Documents", active: true },
@@ -17,9 +17,8 @@ const RECENT_DOCS = [
     "API reference draft",
 ] as const;
 
-/** Demo navbar (62px) + in-app document header (52px). */
-const REALISTIC_SHELL_TOP = "114px";
-const REALISTIC_EDITOR_HEIGHT = `calc(100vh - ${DEMO_NAVBAR_SHELL_OFFSET} - 52px)`;
+/** Fills what is left below the demo navbar and the in-app document header (52px). */
+const REALISTIC_EDITOR_HEIGHT = `calc(100vh - ${DEMO_NAVBAR_HEIGHT} - 52px)`;
 
 export function RealisticUITab() {
     const [docTitle] = useState("State of Rich Text Editors");
@@ -100,7 +99,7 @@ export function RealisticUITab() {
                             // eslint-disable-next-line no-console
                             if ((import.meta as any).env?.DEV) console.debug("change", html.length, "bytes");
                         }}
-                        extraStyle={embeddedAppEditor(REALISTIC_SHELL_TOP, REALISTIC_EDITOR_HEIGHT)}
+                        extraStyle={embeddedAppEditor(REALISTIC_EDITOR_HEIGHT)}
                     />
                 </div>
             </div>

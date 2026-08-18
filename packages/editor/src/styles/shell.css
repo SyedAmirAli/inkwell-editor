@@ -17,14 +17,51 @@
     contain: layout style;
     transition: border-radius var(--dur-4) var(--ease-io);
 }
+/* Fullscreen: the shell is portalled into .rte-fullscreen-layer (a top-layer
+   <dialog>), so it only has to fill that layer. It deliberately does NOT
+   position itself — escaping the host's stacking context is the layer's job,
+   not something a z-index here could ever win. */
 .rte-shell[data-mode="fullscreen"] {
-    position: fixed;
-    /* Offset the fullscreen shell from the top so it sits below a host's fixed
-       header instead of covering it. Override with `--rte-shell-top`. */
-    inset: var(--rte-shell-top, 0) 0 0 0;
+    position: relative;
+    inset: auto;
+    height: 100%;
     border-radius: 0;
-    z-index: 60;
     border: 0;
+}
+
+/* ─── Fullscreen layer ────────────────────────────────────────────────
+   A <dialog> promoted to the browser's top layer via showModal(). The top
+   layer paints above every stacking context in the document regardless of
+   z-index, and is unaffected by transformed/contained ancestors — which is
+   why fullscreen no longer needs (or offers) a host-header offset.
+   The z-index below only matters in the non-modal fallback path. */
+.rte-fullscreen-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    background: var(--surface);
+    color: var(--fg);
+}
+.rte-fullscreen-layer[open] {
+    display: flex;
+}
+.rte-fullscreen-layer::backdrop {
+    background: var(--surface);
+}
+.rte-fullscreen-layer > .rte-stage {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
 }
 .rte-shell[data-mode="compact"] {
     border: 0;
@@ -365,44 +402,93 @@
     min-height: 0;
     background: var(--surface);
 }
+/* Padding model — read this before adding a padding rule here.
+
+   There are exactly TWO paddings between the shell and the text:
+
+     .rte-canvas        gutter around the page card   → --rte-canvas-padding
+     .rte-canvas-inner  inside the page card          → --rte-page-inset
+
+   Every variant (mode, free-canvas) only ever reassigns the PRIVATE
+   `--_*` default. The public `--rte-*` override is read in a single place,
+   so setting it once wins in every mode — a variant can never silently
+   out-specify a consumer's override the way the old per-mode `padding`
+   declarations did. Never write `padding:` on these two elements again;
+   set `--_canvas-padding` / `--_page-inset` instead. */
 .rte-canvas {
+    --_canvas-padding: var(--s-8) var(--s-6);
     flex: 1;
-    overflow: auto;
+    /* Vertical scrolling only. Nothing may ever scroll the canvas sideways:
+       wide content scrolls inside its own wrapper (see .tableWrapper), and the
+       page card can no longer outgrow the canvas. This also stops the page
+       resize handles — which sit at the card's edge minus 16px — from adding a
+       phantom horizontal scrollbar once the gutter is set to 0. */
+    overflow-x: hidden;
+    overflow-y: auto;
     min-width: 0;
     display: flex;
     justify-content: center;
-    /* Gutter around the document "page". Override via the Editor `style` prop
-       with `--rte-canvas-padding` to tighten/remove it when embedded. */
-    padding: var(--rte-canvas-padding, var(--s-8) var(--s-6));
-    background: var(--surface);
+    padding: var(--rte-canvas-padding, var(--_canvas-padding));
+    background: var(--rte-canvas-bg, var(--surface));
 }
 .rte-canvas[data-mode="document"] {
-    padding: var(--rte-canvas-padding, var(--s-10) var(--s-8));
+    --_canvas-padding: var(--s-10) var(--s-8);
 }
 .rte-canvas[data-mode="fullscreen"] {
-    padding: var(--rte-canvas-padding, var(--s-12) var(--s-16));
+    --_canvas-padding: var(--s-12) var(--s-16);
+    overflow-y: auto;
 }
 .rte-canvas[data-mode="compact"] {
-    padding: var(--rte-canvas-padding, var(--s-3));
+    --_canvas-padding: var(--s-3);
     justify-content: stretch;
     background: transparent;
 }
 
 .rte-canvas-inner {
+    --_page-inset: 64px 80px 96px;
     width: 100%;
-    max-width: var(--w-page);
-    background: var(--canvas);
-    border-radius: var(--r-4);
-    box-shadow: var(--shadow-page);
-    /* Inner padding of the document "page" itself. Override via the Editor
-       `style` prop with `--rte-page-inset` (e.g. for a denser embed). */
-    padding: var(--rte-page-inset, 64px 80px 96px);
+    /* Flex items default to `min-width: auto`, which refuses to shrink below
+       the content's min-content width — one wide table was enough to push the
+       card past the canvas and overflow the whole editor. This is the fix that
+       makes `overflow-x: hidden` on the card unnecessary. */
+    min-width: 0;
+    /* Width resolution order: consumer override → dragged width (set inline as
+       a custom property by the resize handles) → the default reading column.
+       The drag is inside the fallback chain, so it can never beat the
+       consumer's `page.maxWidth` the way an inline `max-width` did. */
+    max-width: var(--rte-page-max-width, var(--_page-width, var(--w-page)));
+    background: var(--rte-page-bg, var(--canvas));
+    border-radius: var(--rte-page-radius, var(--r-4));
+    box-shadow: var(--rte-page-shadow, var(--shadow-page));
+    padding: var(--rte-page-inset, var(--_page-inset));
     position: relative;
 }
+.rte-canvas[data-mode="document"] .rte-canvas-inner {
+    overflow-y: auto;
+}
 .rte-canvas[data-mode="fullscreen"] .rte-canvas-inner {
-    max-width: 760px;
+    --_page-inset: 24px 0;
+    max-width: var(--rte-page-max-width, var(--_page-width, 760px));
     box-shadow: none;
-    padding: var(--rte-page-inset, 24px 0);
+    background: transparent;
+    overflow-y: visible;
+}
+
+/* ── Free canvas ──────────────────────────────────────────────────────
+   Toggled by the "Fill available width" toolbar button. Drops the page
+   width constraint so the canvas spans the full editor region. */
+.rte-canvas[data-free] {
+    --_canvas-padding: var(--s-6);
+}
+.rte-canvas[data-free] .rte-canvas-inner,
+.rte-canvas-inner[data-free] {
+    --_page-inset: 48px 56px 72px;
+    max-width: none;
+    width: 100%;
+}
+.rte-canvas[data-mode="fullscreen"][data-free] .rte-canvas-inner {
+    --_page-inset: 32px 48px;
+    max-width: none;
     background: transparent;
 }
 
@@ -1125,31 +1211,72 @@
     background: var(--color-red-200) !important;
 }
 
-/* App-level chrome */
+/* ─── Component root ──────────────────────────────────────────────────
+   The root owns NOTHING above itself: no viewport sizing, no outer
+   padding, no background. It fills the box the host gives it, so
+   dropping <Editor> into an existing layout needs zero overrides.
+
+   `data-layout="standalone"` opts into the full-page presentation (the
+   editor centred in its own viewport) used by the demo and by apps
+   where the editor owns the screen. Only that mode reads the
+   --rte-standalone-* hooks. */
 .rte-app-page {
-    /* Sizing hooks — override via the Editor `style` prop to embed the editor
-       inside an existing layout instead of letting it own the viewport. */
-    --rte-shell-top: 0px; /* fullscreen top offset; override to clear a fixed host header */
-    min-height: var(--rte-page-min-height, 100vh);
-    background: var(--rte-page-bg, var(--surface));
-    padding: var(--rte-page-padding, var(--s-8));
+    /* Anchors the absolutely-positioned mode rail to the editor, not the
+       window. */
+    position: relative;
     display: flex;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Default: fill the host's box. */
+.rte-app-page[data-layout="fill"] {
+    height: var(--rte-height, 100%);
+    /* Floor so the editor is still usable when the host parent has no
+       resolvable height (the common `<div><Editor/></div>` case). */
+    min-height: var(--rte-min-height, 320px);
+}
+
+.rte-app-page[data-layout="standalone"] {
+    min-height: var(--rte-standalone-min-height, 100vh);
+    padding: var(--rte-standalone-padding, var(--s-8));
+    background: var(--rte-standalone-bg, var(--surface));
     align-items: center;
     justify-content: center;
-    /* Anchor the absolutely-positioned mode rail to the editor, not the window. */
-    position: relative;
 }
+
 .rte-stage {
+    position: relative;
+    display: flex;
+    width: var(--rte-width, 100%);
+    min-width: 0;
+}
+.rte-app-page[data-layout="fill"] .rte-stage {
+    height: 100%;
+    min-height: 0;
+}
+.rte-app-page[data-layout="standalone"] .rte-stage {
     width: var(--rte-width, min(1280px, 100%));
     height: var(--rte-height, min(820px, calc(100vh - 64px)));
     max-height: 100%;
-    position: relative;
 }
-.rte-stage[data-mode="compact"] {
-    width: 580px;
+.rte-stage > .rte-shell {
+    flex: 1;
+    min-width: 0;
+}
+/* Compact is a content-height widget, so it never stretches. */
+.rte-app-page[data-layout="standalone"] .rte-stage[data-mode="compact"] {
+    width: var(--rte-width, 580px);
     height: auto;
     align-self: flex-start;
     margin-top: 80px;
+}
+.rte-app-page[data-layout="fill"] .rte-stage[data-mode="compact"] {
+    height: auto;
+}
+.rte-app-page:has(> .rte-stage[data-mode="compact"]) {
+    min-height: 0;
+    align-items: flex-start;
 }
 
 /* Mode rail pinned to the right edge of the editor (not the viewport), so it
@@ -1169,11 +1296,8 @@
     box-shadow: var(--shadow-1);
     z-index: 70;
 }
-/* In the built-in fullscreen mode the shell covers the viewport, so the rail
-   must pin to the viewport rather than the (now off-screen) editor box. */
-.rte-stage[data-mode="fullscreen"] .rte-mode-rail {
-    position: fixed;
-}
+/* In fullscreen the whole stage is portalled into the top-layer overlay and
+   fills it, so the rail stays absolutely positioned against the stage. */
 .rte-mode-rail button {
     width: 32px;
     height: 32px;

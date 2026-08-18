@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Editor, type EditorHandle } from "@syedamirali/inkwell-editor";
 
 import { FONTS, SAMPLE } from "../constants";
-import { shellBelowDemoNav } from "../editorPresets";
+import { standaloneBelowNav } from "../editorPresets";
 
 export function EditorAndAITab() {
     const editorRef = useRef<EditorHandle>(null);
@@ -20,7 +20,8 @@ export function EditorAndAITab() {
                 if ((import.meta as any).env?.DEV) console.debug("change", html.length, "bytes");
             }}
             aiPanelOpen={true}
-            extraStyle={shellBelowDemoNav}
+            layout="standalone"
+            extraStyle={standaloneBelowNav}
         />
     );
 }

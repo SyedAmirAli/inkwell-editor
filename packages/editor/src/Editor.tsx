@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import { createPortal } from "react-dom";
+import type { CSSProperties, ReactNode, RefObject } from "react";
 import type { Editor as TiptapEditor } from "@tiptap/react";
 
 import { Menubar } from "./components/Menubar";
@@ -12,13 +13,30 @@ import { CommentPanel, type CommentItem } from "./components/CommentPanel";
 import { Icons } from "./components/Icons";
 import { getInlinedHTML } from "./utils/getInlinedHTML";
 
-import type { EditorExtraStyleProps, EditorHandle, EditorStyleProperties, FontDef, Mode, Theme } from "./types";
+import type {
+    EditorExtraStyleProps,
+    EditorHandle,
+    EditorLayout,
+    EditorStyleProperties,
+    FontDef,
+    Mode,
+    Theme,
+} from "./types";
 
-export type { EditorHandle, FontDef, Mode, Theme, EditorExtraStyleProps } from "./types";
+export type { EditorHandle, FontDef, Mode, Theme, EditorLayout, EditorExtraStyleProps } from "./types";
 
 export interface EditorProps {
     /** Initial canvas mode. Defaults to `"document"`. */
     mode?: Mode;
+    /**
+     * How the root relates to its parent box. Defaults to `"fill"`: the editor
+     * fills the box the host gives it and owns no viewport sizing, padding or
+     * background of its own — embed it anywhere with no overrides.
+     *
+     * Use `"standalone"` for a dedicated editor page, where the editor should
+     * centre itself in a padded full-viewport wrapper.
+     */
+    layout?: EditorLayout;
     /** Initial HTML content for the document. */
     initialValue?: string;
     /** Initial theme. Defaults to `"light"`. */
@@ -56,20 +74,16 @@ export interface EditorProps {
      * Typed layout overrides for embedding. Merged into the same CSS variables
      * as `style`; `extraStyle` wins when both set the same hook.
      *
+     * The default layout already embeds cleanly, so this is for taste, not
+     * for undoing the component's own chrome:
+     *
      * ```tsx
      * <Editor
+     *   height="520px"
      *   showModeRail={false}
      *   extraStyle={{
-     *     page: {
-     *       minHeight: "0px",
-     *       padding: "0px",
-     *       background: "transparent",
-     *       inset: "32px 40px",
-     *     },
-     *     width: "100%",
-     *     height: "520px",
-     *     canvasPadding: "0px",
-     *     shell: { top: "62px" },
+     *     canvas: { padding: "0px" },
+     *     page: { inset: "24px 28px", background: "transparent", shadow: "none" },
      *   }}
      * />
      * ```
@@ -91,9 +105,13 @@ const applyTheme = (theme: Theme, custom: { fg: string; bg: string }) => {
     }
 };
 
+/** Module-level so the deprecation notice is logged once, not per instance. */
+let warnedShellTop = false;
+
 export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     {
         mode: initialMode = "document",
+        layout = "fill",
         initialValue,
         defaultTheme = "light",
         defaultFonts,
@@ -121,20 +139,47 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     const editorRef = useRef<TiptapEditor | null>(null);
     const rootRef = useRef<HTMLDivElement>(null);
 
+    /**
+     * One `extraStyle` group per box, one CSS variable per hook. `undefined`
+     * entries are dropped so an unset override falls through to the
+     * stylesheet default rather than blanking it out.
+     */
     const styles = useMemo(() => {
-        return {
-            ...style,
+        const merged: Record<string, string | undefined> = {
+            "--rte-width": extraStyle?.width ?? style?.["--rte-width"],
+            "--rte-height": extraStyle?.height ?? style?.["--rte-height"],
+            "--rte-min-height": extraStyle?.minHeight ?? style?.["--rte-min-height"],
+            "--rte-canvas-padding": extraStyle?.canvas?.padding ?? style?.["--rte-canvas-padding"],
+            "--rte-canvas-bg": extraStyle?.canvas?.background ?? style?.["--rte-canvas-bg"],
+            "--rte-page-inset": extraStyle?.page?.inset ?? style?.["--rte-page-inset"],
+            "--rte-page-bg": extraStyle?.page?.background ?? style?.["--rte-page-bg"],
+            "--rte-page-max-width": extraStyle?.page?.maxWidth ?? style?.["--rte-page-max-width"],
+            "--rte-page-radius": extraStyle?.page?.radius ?? style?.["--rte-page-radius"],
+            "--rte-page-shadow": extraStyle?.page?.shadow ?? style?.["--rte-page-shadow"],
+            "--rte-standalone-padding": extraStyle?.standalone?.padding ?? style?.["--rte-standalone-padding"],
+            "--rte-standalone-bg": extraStyle?.standalone?.background ?? style?.["--rte-standalone-bg"],
+            "--rte-standalone-min-height":
+                extraStyle?.standalone?.minHeight ?? style?.["--rte-standalone-min-height"],
+        };
 
-            "--rte-page-min-height": extraStyle?.page?.minHeight ?? style?.["--rte-page-min-height"] ?? undefined,
-            "--rte-page-padding": extraStyle?.page?.padding ?? style?.["--rte-page-padding"] ?? undefined,
-            "--rte-page-bg": extraStyle?.page?.background ?? style?.["--rte-page-bg"] ?? undefined,
-            "--rte-width": extraStyle?.width ?? style?.["--rte-width"] ?? undefined,
-            "--rte-height": extraStyle?.height ?? style?.["--rte-height"] ?? undefined,
-            "--rte-canvas-padding": extraStyle?.canvasPadding ?? style?.["--rte-canvas-padding"] ?? undefined,
-            "--rte-page-inset": extraStyle?.page?.inset ?? style?.["--rte-page-inset"] ?? undefined,
-            "--rte-shell-top": extraStyle?.shell?.top ?? style?.["--rte-shell-top"] ?? undefined,
-        } as CSSProperties;
+        const vars: Record<string, string> = {};
+        for (const [key, value] of Object.entries(merged)) {
+            if (value != null) vars[key] = value;
+        }
+        return { ...style, ...vars } as CSSProperties;
     }, [style, extraStyle]);
+
+    useEffect(() => {
+        if (warnedShellTop || !extraStyle?.shell?.top) return;
+        warnedShellTop = true;
+        console.warn(
+            "[inkwell-editor] `extraStyle.shell.top` is ignored since v2. Fullscreen now renders in the " +
+                "browser's top layer and always covers the whole viewport, so no host-header offset is needed."
+        );
+    }, [extraStyle?.shell?.top]);
+
+    /** The consumer pinned the page width, so the drag-resize handles are moot. */
+    const pageWidthLocked = Boolean(extraStyle?.page?.maxWidth ?? style?.["--rte-page-max-width"]);
 
     useImperativeHandle(
         ref,
@@ -153,23 +198,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         []
     );
 
-    /**
-     * Safety net for embedding inside a <form>. A <button> with no `type`
-     * defaults to `type="submit"`, so any editor control would submit the host
-     * form. Every button in the package sets `type="button"` explicitly; this
-     * capture-phase listener fixes the element before the click's default
-     * action runs, so a control added later can never reintroduce the bug.
-     */
-    useEffect(() => {
-        const root = rootRef.current;
-        if (!root) return;
-        const onClickCapture = (e: MouseEvent) => {
-            const button = (e.target as HTMLElement | null)?.closest?.("button");
-            if (button && !button.hasAttribute("type")) button.setAttribute("type", "button");
-        };
-        root.addEventListener("click", onClickCapture, true);
-        return () => root.removeEventListener("click", onClickCapture, true);
-    }, []);
+    useButtonTypeGuard(rootRef);
 
     useEffect(() => {
         applyTheme(theme, custom);
@@ -234,14 +263,8 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
         [commentQuote]
     );
 
-    return (
-        <div
-            ref={rootRef}
-            className={className ? `rte-app-page ${className}` : "rte-app-page"}
-            style={styles}
-            data-screen-label="Inkwell editor"
-        >
-            <div className="rte-stage" data-mode={mode}>
+    const stage = (
+        <div className="rte-stage" data-mode={mode}>
                 {showModeRail && <ModeRail mode={mode} onMode={setMode} />}
                 <div className="rte-shell" data-mode={mode}>
                     {theme === "custom" && (
@@ -311,6 +334,7 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
                                 onEditorReady={handleEditorReady}
                                 initialContent={initialValue}
                                 onChange={onChange}
+                                pageWidthLocked={pageWidthLocked}
                             />
                         )}
                         {mode !== "compact" && (
@@ -330,10 +354,127 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
 
                     {mode !== "compact" && <StatusBar editor={editor} />}
                 </div>
-            </div>
+        </div>
+    );
+
+    return (
+        <div
+            ref={rootRef}
+            className={className ? `rte-app-page ${className}` : "rte-app-page"}
+            style={styles}
+            data-layout={layout}
+            data-mode={mode}
+            data-screen-label="Inkwell editor"
+        >
+            {mode === "fullscreen" ? (
+                /* Portalled out of the host tree entirely — see FullscreenLayer.
+                   The root stays mounted so the host layout keeps its space. */
+                <FullscreenLayer
+                    className={className}
+                    style={styles}
+                    onRequestExit={() => setMode("document")}
+                >
+                    {stage}
+                </FullscreenLayer>
+            ) : (
+                stage
+            )}
         </div>
     );
 });
+
+/**
+ * Renders the editor in the browser's **top layer** via `<dialog>.showModal()`.
+ *
+ * This is the only mechanism that satisfies "always above everything". A
+ * `position: fixed` overlay inside the host tree loses in three ways that no
+ * z-index can fix: a host element with a higher z-index wins outright; an
+ * ancestor that forms a stacking context (`position` + `z-index`, `opacity`,
+ * `backdrop-filter`, …) confines the overlay's z-index to that context; and an
+ * ancestor with `transform` / `filter` / `contain` / `will-change` becomes the
+ * containing block, so `inset: 0` no longer means the viewport.
+ *
+ * Top-layer elements are painted above the entire document tree regardless of
+ * all three, so the overlay always covers the full viewport.
+ */
+function FullscreenLayer({
+    children,
+    className,
+    style,
+    onRequestExit,
+}: {
+    children: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+    onRequestExit: () => void;
+}) {
+    const ref = useRef<HTMLDialogElement>(null);
+    useButtonTypeGuard(ref);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        try {
+            if (!el.open) el.showModal();
+        } catch {
+            // No top layer available — the stylesheet's very high z-index on
+            // .rte-fullscreen-layer keeps this path usable.
+            el.setAttribute("open", "");
+        }
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            if (el.open) {
+                try {
+                    el.close();
+                } catch {
+                    el.removeAttribute("open");
+                }
+            }
+        };
+    }, []);
+
+    return createPortal(
+        <dialog
+            ref={ref}
+            className={className ? `rte-fullscreen-layer ${className}` : "rte-fullscreen-layer"}
+            /* Custom properties do not inherit across a portal, so the same
+               style object is applied here as on the root. */
+            style={style}
+            aria-label="Editor, fullscreen"
+            onCancel={(e) => {
+                // Native Esc closes the dialog directly; route it through state
+                // instead so mode stays the single source of truth.
+                e.preventDefault();
+                onRequestExit();
+            }}
+        >
+            {children}
+        </dialog>,
+        document.body
+    );
+}
+
+/**
+ * Safety net for embedding inside a <form>. A <button> with no `type` defaults
+ * to `type="submit"`, so any editor control would submit the host form. Every
+ * button in the package sets `type="button"` explicitly; this capture-phase
+ * listener fixes the element before the click's default action runs, so a
+ * control added later can never reintroduce the bug.
+ */
+function useButtonTypeGuard(ref: RefObject<HTMLElement | null>) {
+    useEffect(() => {
+        const root = ref.current;
+        if (!root) return;
+        const onClickCapture = (e: MouseEvent) => {
+            const button = (e.target as HTMLElement | null)?.closest?.("button");
+            if (button && !button.hasAttribute("type")) button.setAttribute("type", "button");
+        };
+        root.addEventListener("click", onClickCapture, true);
+        return () => root.removeEventListener("click", onClickCapture, true);
+    }, [ref]);
+}
 
 function ModeRail({ mode, onMode }: { mode: Mode; onMode: (m: Mode) => void }) {
     return (

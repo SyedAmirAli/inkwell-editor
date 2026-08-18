@@ -15,6 +15,15 @@
     outline: none;
 }
 
+/* Long unbroken strings — URLs, hashes, minified code — must wrap instead of
+   widening the page card. `break-word` only breaks a word that genuinely
+   cannot fit, so ordinary prose is untouched. */
+.rte-content,
+.ProseMirror {
+    overflow-wrap: break-word;
+    min-width: 0;
+}
+
 /* Placeholder */
 .ProseMirror p.is-empty::before,
 .ProseMirror p.is-editor-empty:first-child::before {
@@ -84,14 +93,14 @@
     width: fit-content;
     max-width: 72%;
     margin: 0.35em 1.1em 0.75em 0;
-    overflow-x: visible;
+    overflow-x: auto;
 }
 .rte-content .tableWrapper:has(> table[data-table-align="right"]) {
     float: right;
     width: fit-content;
     max-width: 72%;
     margin: 0.35em 0 0.75em 1.1em;
-    overflow-x: visible;
+    overflow-x: auto;
 }
 .rte-content .tableWrapper:has(> table[data-table-align="center"]) {
     width: fit-content;
@@ -134,7 +143,11 @@
     opacity: 0.5;
 }
 .tableWrapper {
+    /* A table wider than the page card scrolls inside this wrapper instead of
+       widening the card. `max-width` is what makes the scrolling actually
+       engage — without it the wrapper just grows with the table. */
     overflow-x: auto;
+    max-width: 100%;
 }
 
 /* Link */
@@ -748,31 +761,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     color: var(--fg);
 }
 
-.rte-canvas[data-mode="document"] .rte-canvas-inner {
-    overflow-y: auto;
-}
-
-.rte-canvas[data-mode="fullscreen"] .rte-canvas-inner {
-    overflow-y: visible;
-}
-
-.rte-canvas[data-mode="fullscreen"] {
-    overflow-y: auto;
-}
-
-/* ── Free canvas mode ─────────────────────────────────────────────────
-   Toggled by the "Fill available width" toolbar button. Removes the
-   A4-ish page width constraint so the canvas spans the entire editor
-   region between the mode rail and the AI panel. */
-.rte-canvas[data-free] {
-    padding: var(--s-6) var(--s-6);
-}
-.rte-canvas[data-free] .rte-canvas-inner,
-.rte-canvas-inner[data-free] {
-    max-width: none;
-    width: 100%;
-    padding: 48px 56px 72px;
-}
+/* Canvas + page-card layout (including free-canvas) lives in shell.css.
+   It is chrome, not document content, and the hardcoded paddings that used
+   to sit here silently overrode --rte-canvas-padding / --rte-page-inset. */
 /* ── Table controls (toolbar + hover row/col handles) ─────────────── */
 .rte-table-controls {
     /* Container is just for grouping — children are absolutely positioned. */
@@ -1202,12 +1193,6 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
 }
 .rte-table-picker-quick:hover {
     background: var(--surface-2, var(--canvas));
-}
-
-.rte-canvas[data-mode="fullscreen"][data-free] .rte-canvas-inner {
-    max-width: none;
-    padding: 32px 48px;
-    background: transparent;
 }
 
 /* ── Resizable image ──────────────────────────────────────────────── */
