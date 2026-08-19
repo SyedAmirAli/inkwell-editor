@@ -5,12 +5,21 @@ import { Icons } from "./Icons.tsx";
 import { FilerobotEditor } from "./FilerobotEditor.tsx";
 
 type Step = "pick" | "edit";
-type SourceTab = "upload" | "url";
+type SourceTab = "upload" | "url" | "attrs";
+
+interface ImageAttrs {
+    src: string;
+    alt: string | null;
+    title: string | null;
+    description: string | null;
+}
 
 interface ImageUploadDialogProps {
     open: boolean;
     onClose: () => void;
-    onInsert: (src: string) => void;
+    onInsert: (attrs: ImageAttrs) => void;
+    /** Present when editing an existing image rather than inserting a new one. */
+    initial?: ImageAttrs | null;
 }
 
 const fileToDataURL = (file: File): Promise<string> =>
@@ -21,7 +30,7 @@ const fileToDataURL = (file: File): Promise<string> =>
         reader.readAsDataURL(file);
     });
 
-export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialogProps) {
+export function ImageUploadDialog({ open, onClose, onInsert, initial }: ImageUploadDialogProps) {
     const [step, setStep] = useState<Step>("pick");
     const [tab, setTab] = useState<SourceTab>("upload");
     const [url, setUrl] = useState("");
@@ -30,19 +39,47 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
     const [previewSrc, setPreviewSrc] = useState<string | null>(null);
     const [editorSrc, setEditorSrc] = useState<string | null>(null);
     const [dragOver, setDragOver] = useState(false);
+    const [alt, setAlt] = useState("");
+    const [description, setDescription] = useState("");
+    const [title, setTitle] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (open) {
             setStep("pick");
-            setTab("upload");
-            setUrl("");
             setUrlError(null);
-            setPreviewSrc(null);
-            setEditorSrc(null);
             setLoading(false);
+            setDragOver(false);
+            setEditorSrc(null);
+            if (initial) {
+                setTab("attrs");
+                setPreviewSrc(initial.src || null);
+                setUrl(initial.src && !initial.src.startsWith("data:") ? initial.src : "");
+                setAlt(initial.alt || "");
+                setDescription(initial.description || "");
+                setTitle(initial.title || "");
+            } else {
+                setTab("upload");
+                setUrl("");
+                setPreviewSrc(null);
+                setAlt("");
+                setDescription("");
+                setTitle("");
+            }
         }
     }, [open]);
+
+    const clearImage = () => {
+        setPreviewSrc(null);
+        setUrl("");
+    };
+
+    const buildAttrs = (src: string): ImageAttrs => ({
+        src,
+        alt: alt.trim() || null,
+        title: title.trim() || null,
+        description: description.trim() || null,
+    });
 
     const acceptFile = useCallback(async (file: File) => {
         if (!file.type.startsWith("image/")) {
@@ -102,12 +139,12 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
 
     const onInsertWithoutEdit = () => {
         if (!previewSrc) return;
-        onInsert(previewSrc);
+        onInsert(buildAttrs(previewSrc));
         onClose();
     };
 
     const onFilerobotSave = ({ imageBase64 }: { imageBase64: string }) => {
-        onInsert(imageBase64);
+        onInsert(buildAttrs(imageBase64));
         onClose();
     };
 
@@ -129,14 +166,15 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                 {step === "pick" ? (
                     <>
                         <header className="rte-img-modal-head">
-                            <h3>Insert image</h3>
+                            <h3>{initial ? "Edit image" : "Insert image"}</h3>
                             <button type="button" className="rte-img-close" onClick={onClose} aria-label="Close">
                                 <Icons.close size={16} />
                             </button>
                         </header>
 
                         <div className="rte-img-tabs" role="tablist">
-                            <button type="button"
+                            <button
+                                type="button"
                                 role="tab"
                                 aria-selected={tab === "upload"}
                                 data-on={tab === "upload" || undefined}
@@ -144,44 +182,67 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                             >
                                 <Icons.upload size={14} /> Upload
                             </button>
-                            <button type="button"
+                            <button
+                                type="button"
                                 role="tab"
                                 aria-selected={tab === "url"}
                                 data-on={tab === "url" || undefined}
                                 onClick={() => setTab("url")}
                             >
-                                <Icons.link size={14} /> From URL
+                                <Icons.link size={14} /> From URLs
+                            </button>
+                            <button
+                                type="button"
+                                role="tab"
+                                aria-selected={tab === "attrs"}
+                                data-on={tab === "attrs" || undefined}
+                                onClick={() => setTab("attrs")}
+                            >
+                                <Icons.doc size={14} /> Manage attributes
                             </button>
                         </div>
 
                         <div className="rte-img-body">
-                            {tab === "upload" && !previewSrc && (
-                                <div
-                                    className={`rte-img-drop ${dragOver ? "rte-img-drop--over" : ""}`}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    onDragOver={(e) => {
-                                        e.preventDefault();
-                                        setDragOver(true);
-                                    }}
-                                    onDragLeave={() => setDragOver(false)}
-                                    onDrop={onDrop}
-                                >
-                                    <div className="rte-img-drop-ic">
-                                        <Icons.upload size={26} />
+                            {tab === "upload" &&
+                                (previewSrc ? (
+                                    <div className="rte-img-preview">
+                                        <div className="rte-img-preview-frame">
+                                            <img src={previewSrc} alt="Preview" />
+                                        </div>
+                                        <div className="rte-img-preview-meta">
+                                            <span>
+                                                Image ready. Edit it for crop, filters and adjustments — or insert
+                                                as-is.
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="rte-img-drop-title">Drag an image here, or click to browse</div>
-                                    <div className="rte-img-drop-sub">PNG, JPG, GIF, SVG, WebP — up to 10MB</div>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        hidden
-                                        onChange={onFilePick}
-                                    />
-                                </div>
-                            )}
+                                ) : (
+                                    <div
+                                        className={`rte-img-drop ${dragOver ? "rte-img-drop--over" : ""}`}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        onDragOver={(e) => {
+                                            e.preventDefault();
+                                            setDragOver(true);
+                                        }}
+                                        onDragLeave={() => setDragOver(false)}
+                                        onDrop={onDrop}
+                                    >
+                                        <div className="rte-img-drop-ic">
+                                            <Icons.upload size={26} />
+                                        </div>
+                                        <div className="rte-img-drop-title">Drag an image here, or click to browse</div>
+                                        <div className="rte-img-drop-sub">PNG, JPG, GIF, SVG, WebP — up to 10MB</div>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            hidden
+                                            onChange={onFilePick}
+                                        />
+                                    </div>
+                                ))}
 
-                            {tab === "url" && !previewSrc && (
+                            {tab === "url" && (
                                 <div className="rte-img-url-form">
                                     <label className="rte-link-label">Image URL</label>
                                     <input
@@ -197,7 +258,8 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                                         }}
                                         autoFocus
                                     />
-                                    <button type="button"
+                                    <button
+                                        type="button"
                                         className="rte-btn rte-btn-primary"
                                         onClick={onUrlLoad}
                                         disabled={!url.trim() || loading}
@@ -205,19 +267,53 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                                     >
                                         {loading ? "Loading…" : "Load image"}
                                     </button>
+                                    {previewSrc && (
+                                        <div className="rte-img-attrs-preview" style={{ marginTop: 12 }}>
+                                            <img src={previewSrc} alt="Preview" />
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            {previewSrc && (
-                                <div className="rte-img-preview">
-                                    <div className="rte-img-preview-frame">
-                                        <img src={previewSrc} alt="Preview" />
-                                    </div>
-                                    <div className="rte-img-preview-meta">
-                                        <span>
-                                            Image ready. Edit it for crop, filters and adjustments — or insert as-is.
+                            {tab === "attrs" && (
+                                <div className="rte-img-attrs-form">
+                                    <label className="rte-link-label">Alt text</label>
+                                    <input
+                                        value={alt}
+                                        onChange={(e) => setAlt(e.target.value)}
+                                        placeholder="Describe the image for screen readers…"
+                                    />
+
+                                    <label className="rte-link-label">Description</label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Optional longer description…"
+                                        rows={3}
+                                    />
+
+                                    <label className="rte-link-label">
+                                        Title{" "}
+                                        <span style={{ fontWeight: 400, color: "var(--fg-muted)" }}>
+                                            (hover tooltip)
                                         </span>
-                                    </div>
+                                    </label>
+                                    <input
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        placeholder="Shown on hover…"
+                                    />
+
+                                    {previewSrc ? (
+                                        <div className="rte-img-attrs-preview">
+                                            <img src={previewSrc} alt="Preview" />
+                                        </div>
+                                    ) : (
+                                        <div className="rte-img-attrs-empty">
+                                            No image selected yet — choose one from Upload or From URL. Attributes apply
+                                            to it either way.
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -226,12 +322,10 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
 
                         <footer className="rte-img-modal-foot">
                             {previewSrc && (
-                                <button type="button"
+                                <button
+                                    type="button"
                                     className="rte-btn rte-btn-ghost"
-                                    onClick={() => {
-                                        setPreviewSrc(null);
-                                        setUrl("");
-                                    }}
+                                    onClick={clearImage}
                                     style={{ marginRight: "auto" }}
                                 >
                                     Choose another
@@ -240,14 +334,20 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                             <button type="button" className="rte-btn rte-btn-ghost rte-btn-danger" onClick={onClose}>
                                 Cancel
                             </button>
-                            <button type="button"
+                            <button
+                                type="button"
                                 className="rte-btn rte-btn-success"
                                 onClick={onInsertWithoutEdit}
                                 disabled={!previewSrc}
                             >
-                                Insert as-is
+                                {initial ? "Save changes" : "Insert as-is"}
                             </button>
-                            <button type="button" className="rte-btn rte-btn-primary" onClick={onEdit} disabled={!previewSrc}>
+                            <button
+                                type="button"
+                                className="rte-btn rte-btn-primary"
+                                onClick={onEdit}
+                                disabled={!previewSrc}
+                            >
                                 Edit image
                             </button>
                         </footer>
@@ -264,6 +364,6 @@ export function ImageUploadDialog({ open, onClose, onInsert }: ImageUploadDialog
                 )}
             </div>
         </div>,
-        document.body
+        document.body,
     );
 }

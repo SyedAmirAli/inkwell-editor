@@ -907,7 +907,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     padding: 0;
     cursor: ew-resize;
     opacity: 0.18;
-    transition: opacity 120ms ease, background 120ms ease;
+    transition:
+        opacity 120ms ease,
+        background 120ms ease;
 }
 .rte-table-edge-handle::after {
     content: "";
@@ -942,7 +944,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     justify-content: center;
     z-index: 55;
     opacity: 0.35;
-    transition: opacity 120ms ease, transform 120ms ease;
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
 }
 .rte-table-row-handle:hover,
 .rte-table-row-handle[data-active] {
@@ -959,7 +963,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     justify-content: center;
     z-index: 55;
     opacity: 0.35;
-    transition: opacity 120ms ease, transform 120ms ease;
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
 }
 .rte-table-col-handle:hover,
 .rte-table-col-handle[data-active] {
@@ -1004,7 +1010,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-radius: 99px;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 120ms ease, transform 120ms ease;
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
     z-index: 1;
     padding: 0;
     box-shadow: var(--shadow-1);
@@ -1133,7 +1141,10 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-radius: 2px;
     cursor: pointer;
     padding: 0;
-    transition: background 80ms ease, border-color 80ms ease, transform 80ms ease;
+    transition:
+        background 80ms ease,
+        border-color 80ms ease,
+        transform 80ms ease;
 }
 .rte-table-picker-cell:hover {
     transform: scale(1.05);
@@ -1204,7 +1215,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     line-height: 0;
     margin: 8px 0;
     border-radius: var(--r-3);
-    transition: outline-color 120ms ease, box-shadow 120ms ease;
+    transition:
+        outline-color 120ms ease,
+        box-shadow 120ms ease;
     outline: 2px solid transparent;
     outline-offset: 2px;
     cursor: grab;
@@ -1263,7 +1276,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-radius: 99px;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 120ms ease, transform 120ms ease;
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
     z-index: 2;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -1403,7 +1418,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     box-shadow: var(--shadow-1);
     cursor: grab;
     user-select: none;
-    transition: outline-color 120ms ease, box-shadow 120ms ease;
+    transition:
+        outline-color 120ms ease,
+        box-shadow 120ms ease;
     outline: 2px solid transparent;
     outline-offset: 2px;
 }
@@ -1466,7 +1483,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
 }
 
 .rte-iframe-wrap:hover {
-    box-shadow: 0 0 0 1px var(--border-strong), var(--shadow-1);
+    box-shadow:
+        0 0 0 1px var(--border-strong),
+        var(--shadow-1);
 }
 .rte-iframe-wrap.rte-img-selected {
     outline-color: var(--ring);
@@ -1796,7 +1815,9 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     cursor: pointer;
     color: var(--fg-muted);
     text-align: center;
-    transition: border-color 120ms ease, background 120ms ease;
+    transition:
+        border-color 120ms ease,
+        background 120ms ease;
 }
 .rte-img-drop:hover,
 .rte-img-drop--over {
@@ -1827,7 +1848,7 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     flex-direction: column;
 }
 .rte-img-url-form input {
-    width: 100%;
+    width: 97%;
     padding: 8px 10px;
     border: 1px solid var(--border-strong);
     border-radius: var(--r-2);
@@ -1841,6 +1862,51 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border-color: var(--ring, var(--ring));
 }
 
+.rte-img-attrs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.rte-img-attrs-form input,
+.rte-img-attrs-form textarea {
+    width: 97%;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-2);
+    background: var(--canvas);
+    color: var(--fg);
+    font: 13px/1.4 var(--font-ui);
+    outline: none;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+.rte-img-attrs-form input:focus,
+.rte-img-attrs-form textarea:focus {
+    border-color: var(--ring);
+}
+.rte-img-attrs-preview {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-3);
+    background: var(--surface-2, var(--canvas));
+}
+.rte-img-attrs-preview img {
+    max-width: 100%;
+    max-height: 160px;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
+}
+.rte-img-attrs-empty {
+    padding: 10px 12px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-3);
+    color: var(--fg-muted);
+    font: 12px/1.4 var(--font-ui);
+}
+
 .rte-img-preview {
     display: flex;
     flex-direction: column;
@@ -1850,7 +1916,8 @@ textarea.rte-font-input::-webkit-scrollbar-thumb:hover {
     border: 1px solid var(--border);
     border-radius: var(--r-3);
     overflow: hidden;
-    background: linear-gradient(45deg, var(--surface-2, #f5f5f5) 25%, transparent 25%) 0 0 / 16px 16px,
+    background:
+        linear-gradient(45deg, var(--surface-2, #f5f5f5) 25%, transparent 25%) 0 0 / 16px 16px,
         linear-gradient(-45deg, var(--surface-2, #f5f5f5) 25%, transparent 25%) 0 8px / 16px 16px,
         linear-gradient(45deg, transparent 75%, var(--surface-2, #f5f5f5) 75%) 8px -8px / 16px 16px,
         linear-gradient(-45deg, transparent 75%, var(--surface-2, #f5f5f5) 75%) -8px 0 / 16px 16px;

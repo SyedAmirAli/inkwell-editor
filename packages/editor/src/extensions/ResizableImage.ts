@@ -47,6 +47,17 @@ export const ResizableImage = Image.extend({
                 parseHTML: (el) => el.getAttribute("data-align") ?? "center",
                 renderHTML: (attrs) => ({ "data-align": attrs.align ?? "center" }),
             },
+            /**
+             * Longer accessible description, distinct from `alt` (short) and
+             * `title` (hover tooltip). Rendered as `aria-description` — not a
+             * `data-*` attribute — so it survives the export pipeline's
+             * data-attribute strip in getInlinedHTML.
+             */
+            description: {
+                default: null,
+                parseHTML: (el) => el.getAttribute("aria-description") || null,
+                renderHTML: (attrs) => (attrs.description ? { "aria-description": attrs.description } : {}),
+            },
         };
     },
 
@@ -65,7 +76,11 @@ export const ResizableImage = Image.extend({
             const applyAttrs = (n: any) => {
                 if (n.attrs.src) img.setAttribute("src", n.attrs.src);
                 if (n.attrs.alt) img.setAttribute("alt", n.attrs.alt);
+                else img.removeAttribute("alt");
                 if (n.attrs.title) img.setAttribute("title", n.attrs.title);
+                else img.removeAttribute("title");
+                if (n.attrs.description) img.setAttribute("aria-description", n.attrs.description);
+                else img.removeAttribute("aria-description");
                 if (n.attrs.width != null) {
                     img.style.width = `${n.attrs.width}px`;
                     img.setAttribute("width", String(n.attrs.width));

@@ -349,6 +349,13 @@ export function Toolbar({
     const [showHLMenu, setShowHLMenu] = useState(false);
     const [showLinkDialog, setShowLinkDialog] = useState(false);
     const [showImageDialog, setShowImageDialog] = useState(false);
+    const [editingImage, setEditingImage] = useState<{
+        pos: number;
+        src: string;
+        alt: string | null;
+        title: string | null;
+        description: string | null;
+    } | null>(null);
     const [showIframeDialog, setShowIframeDialog] = useState(false);
     const [showTablePicker, setShowTablePicker] = useState(false);
     const [customFonts, setCustomFonts] = useState<CustomFont[]>(() => readCustomFonts());
@@ -553,25 +560,48 @@ export function Toolbar({
         setFontUrl("");
     };
 
-    const insertImage = () => setShowImageDialog(true);
+    const insertImage = () => {
+        setEditingImage(null);
+        setShowImageDialog(true);
+    };
     const insertIframe = () => setShowIframeDialog(true);
 
     useEffect(() => {
-        const openImg = () => setShowImageDialog(true);
+        const openImg = () => {
+            setEditingImage(null);
+            setShowImageDialog(true);
+        };
         const openFr = () => setShowIframeDialog(true);
         const openTbl = () => setShowTablePicker(true);
+        const openLink = () => openLinkDialog();
+        const editImg = (e: CustomEvent) => {
+            const { pos, src, alt, title, description } = e.detail || {};
+            if (pos == null || !src) return;
+            setEditingImage({ pos, src, alt: alt ?? null, title: title ?? null, description: description ?? null });
+            setShowImageDialog(true);
+        };
         window.addEventListener("inkwell:open-image-dialog", openImg);
         window.addEventListener("inkwell:open-iframe-dialog", openFr);
         window.addEventListener("inkwell:open-table-picker", openTbl);
+        window.addEventListener("inkwell:open-link-dialog", openLink);
+        window.addEventListener("inkwell:edit-image", editImg as EventListener);
         return () => {
             window.removeEventListener("inkwell:open-image-dialog", openImg);
             window.removeEventListener("inkwell:open-iframe-dialog", openFr);
             window.removeEventListener("inkwell:open-table-picker", openTbl);
+            window.removeEventListener("inkwell:open-link-dialog", openLink);
+            window.removeEventListener("inkwell:edit-image", editImg as EventListener);
         };
     }, []);
 
-    const handleImageInsert = (src: string) => {
-        editor?.chain().focus().setImage({ src }).run();
+    const handleImageInsert = (attrs: { src: string; alt: string | null; title: string | null; description: string | null }) => {
+        if (!editor) return;
+        if (editingImage) {
+            editor.chain().focus().setNodeSelection(editingImage.pos).updateAttributes("image", attrs).run();
+            setEditingImage(null);
+        } else {
+            editor.chain().focus().setImage(attrs).run();
+        }
     };
 
     const handleIframeInsert = (attrs: {
@@ -1081,8 +1111,12 @@ export function Toolbar({
             {/* Image upload + Filerobot editor */}
             <ImageUploadDialog
                 open={showImageDialog}
-                onClose={() => setShowImageDialog(false)}
+                onClose={() => {
+                    setShowImageDialog(false);
+                    setEditingImage(null);
+                }}
                 onInsert={handleImageInsert}
+                initial={editingImage}
             />
 
             {/* Iframe embed */}

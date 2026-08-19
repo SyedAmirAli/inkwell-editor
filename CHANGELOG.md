@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+### Added
+
+- Clicking a link now shows an **Open link** / **Edit link** popover instead of navigating away.
+- The image dialog can edit an existing image and set alt, title, and a longer description (`aria-description`), which survives inlined HTML export.
+- Pasted and typed links no longer inherit `rel` / `target` defaults; those attributes are only set through the link dialog.
+
 ## 2.0.0
 
 ### Breaking changes

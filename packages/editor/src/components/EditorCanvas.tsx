@@ -46,6 +46,7 @@ import FontFamily from "@tiptap/extension-font-family";
 import { Icons } from "./Icons.tsx";
 import { TableControls } from "./TableControls.tsx";
 import { getInlinedHTML } from "../utils/getInlinedHTML.ts";
+import { LinkClickPopover } from "./LinkClickPopover.tsx";
 
 type Mode = "compact" | "document" | "fullscreen";
 
@@ -194,7 +195,17 @@ function BubbleMenuPortal({ editor }: { editor: Editor }) {
             >
                 <Icons.highlight size={15} />
             </button>
-            <button type="button" className="rte-float-btn" title="More" onMouseDown={(e) => e.preventDefault()}>
+            <button type="button"
+                className="rte-float-btn"
+                title={editor.isActive("image") ? "Edit image" : "More"}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                    if (!editor.isActive("image")) return;
+                    const pos = editor.state.selection.from;
+                    const attrs = editor.getAttributes("image");
+                    window.dispatchEvent(new CustomEvent("inkwell:edit-image", { detail: { pos, ...attrs } }));
+                }}
+            >
                 <Icons.ellipsis size={15} />
             </button>
         </div>,
@@ -625,9 +636,13 @@ export function EditorCanvas({
             Underline,
             TextAlign.configure({ types: ["heading", "paragraph"] }),
             TitleLink.configure({
-                openOnClick: true,
+                // Clicking a link opens LinkClickPopover instead of navigating —
+                // see below. Pasted/typed links must not pick up rel/target
+                // defaults they never asked for, so both are nulled out here;
+                // they're only ever set explicitly via LinkDialog.
+                openOnClick: false,
                 linkOnPaste: true,
-                HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
+                HTMLAttributes: { rel: null, target: null },
             }),
             ResizableImage.configure({ inline: false, allowBase64: true }),
             IframeEmbed,
@@ -682,6 +697,7 @@ export function EditorCanvas({
                 {showResizers && renderResizer("left")}
                 {showResizers && renderResizer("right")}
                 {editor && <BubbleMenuPortal editor={editor} />}
+                {editor && <LinkClickPopover editor={editor} />}
                 {editor && <FloatingMenuPortal editor={editor} />}
                 {editor && <SlashMenuPortal editor={editor} />}
                 {editor && <TableControls editor={editor} />}

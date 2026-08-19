@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -9,6 +9,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Icons } from "./Icons.tsx";
 import { LinkDialog } from "./LinkDialog.tsx";
+import { LinkClickPopover } from "./LinkClickPopover.tsx";
 
 // Same title-aware Link extension as the main editor
 const TitleLink = Link.extend({
@@ -36,7 +37,11 @@ export function CompactEditor() {
         extensions: [
             StarterKit.configure({ link: false, underline: false }),
             Underline,
-            TitleLink.configure({ openOnClick: false, linkOnPaste: true }),
+            TitleLink.configure({
+                openOnClick: false,
+                linkOnPaste: true,
+                HTMLAttributes: { rel: null, target: null },
+            }),
             TaskList,
             TaskItem.configure({ nested: true }),
             Placeholder.configure({ placeholder: "Reply, or type / for commands…" }),
@@ -58,6 +63,12 @@ export function CompactEditor() {
         setLinkRel(attrs.rel ?? null);
         setShowLinkDialog(true);
     };
+
+    useEffect(() => {
+        const openLink = () => openLinkDialog();
+        window.addEventListener("inkwell:open-link-dialog", openLink);
+        return () => window.removeEventListener("inkwell:open-link-dialog", openLink);
+    }, [editor]);
 
     const handleLinkApply = (href, title, target, rel) => {
         if (!editor) return;
@@ -147,6 +158,7 @@ export function CompactEditor() {
 
                 <div className="rte-compact-input">
                     <EditorContent editor={editor} />
+                    {editor && <LinkClickPopover editor={editor} />}
                 </div>
 
                 <div className="rte-compact-footer">
