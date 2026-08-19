@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.1
+
+### Fixed
+
+- Strip `rel` / `target` from pasted HTML links so a paste never pre-selects relationship options the user didn't choose.
+- Expand the selection to the full link before opening the dialog from the click popover, so the title field falls back to the link text.
+- Honour `data-underline="none"` in the canvas stylesheet so the Appearance toggle takes effect immediately.
+
 ## 2.1.0
 
 ### Added

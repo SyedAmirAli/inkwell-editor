@@ -663,6 +663,20 @@ export function EditorCanvas({
         content: initialContent ?? INITIAL_CONTENT,
         editorProps: {
             attributes: { class: "rte-content" },
+            // Pasted HTML often carries the source site's own rel/target on
+            // <a> tags (e.g. "nofollow noopener ugc" from CMS/status-page
+            // platforms). Strip them here — only paste-time markup, never
+            // initialContent — so a paste never pre-selects relationship
+            // options the user didn't choose; they're still set explicitly
+            // via LinkDialog.
+            transformPastedHTML(html) {
+                const doc = new DOMParser().parseFromString(html, "text/html");
+                doc.querySelectorAll("a[href]").forEach((a) => {
+                    a.removeAttribute("rel");
+                    a.removeAttribute("target");
+                });
+                return doc.body.innerHTML;
+            },
         },
         onUpdate: ({ editor }) => {
             if (showSource) setSourceValue(getInlinedHTML(editor.getHTML()));

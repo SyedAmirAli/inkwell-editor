@@ -48,6 +48,16 @@ export function CompactEditor() {
         ],
         editorProps: {
             attributes: { class: "rte-content" },
+            // Strip the source site's own rel/target on pasted <a> tags — see
+            // the matching comment in EditorCanvas.tsx.
+            transformPastedHTML(html) {
+                const doc = new DOMParser().parseFromString(html, "text/html");
+                doc.querySelectorAll("a[href]").forEach((a) => {
+                    a.removeAttribute("rel");
+                    a.removeAttribute("target");
+                });
+                return doc.body.innerHTML;
+            },
         },
     });
 

@@ -45,6 +45,11 @@ export function LinkClickPopover({ editor }: { editor: Editor }) {
     };
 
     const editLink = () => {
+        // The click that opened this popover only left a collapsed cursor
+        // inside the link — expand the selection to the full link text first,
+        // so the dialog's Title field falls back to that text same as it
+        // does when the toolbar's link button is used on a selection.
+        editor.chain().focus().extendMarkRange("link").run();
         window.dispatchEvent(new CustomEvent("inkwell:open-link-dialog"));
     };
 

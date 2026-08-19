@@ -154,6 +154,10 @@
 .rte-content a[href] {
     cursor: pointer;
 }
+/* Opt-out from the link dialog's Appearance toggle. */
+.rte-content a[href][data-underline="none"] {
+    text-decoration: none;
+}
 
 /* Code block line numbers (future) */
 .rte-content pre code {
@@ -227,7 +231,7 @@
     margin: 0 0 12px;
 }
 .rte-link-dialog input {
-    width: 100%;
+    width: 95%;
     padding: 8px 10px;
     border: 1px solid var(--border-strong);
     border-radius: var(--r-2);

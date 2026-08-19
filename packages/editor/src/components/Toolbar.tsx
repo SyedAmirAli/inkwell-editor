@@ -592,7 +592,7 @@ export function Toolbar({
             window.removeEventListener("inkwell:open-link-dialog", openLink);
             window.removeEventListener("inkwell:edit-image", editImg as EventListener);
         };
-    }, []);
+    }, [editor]);
 
     const handleImageInsert = (attrs: { src: string; alt: string | null; title: string | null; description: string | null }) => {
         if (!editor) return;
